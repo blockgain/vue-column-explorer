@@ -1,5 +1,5 @@
 import { createColumn } from '../../src/helpers/columnBuilder'
-import { userBooks, bookFiles } from '../mockData'
+import { userBooks, bookFiles, simulateApiCall } from '../mockData'
 import { createBookFilesColumn } from './bookFiles'
 
 export function createBooksColumn(userId: string) {
@@ -7,14 +7,17 @@ export function createBooksColumn(userId: string) {
     id: `books_${userId}`,
     name: 'Books',
 
-    fetchData: () => {
+    fetchData: async () => {
+      // Simulate API call - fetch books from backend
       const books = userBooks[userId] || []
-      // Add count of files in each book folder
-      return books.map(book => ({
+      const booksWithCount = books.map(book => ({
         ...book,
         count: bookFiles[book.id]?.length || 0,
         hasChildren: true
       }))
+
+      // Simulate network delay (1.5 seconds)
+      return await simulateApiCall(booksWithCount, 1500)
     },
 
     onItemClick: (item) => {

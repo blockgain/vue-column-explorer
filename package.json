@@ -1,6 +1,6 @@
 {
   "name": "vue-column-explorer",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A powerful multi-column file explorer component for Vue 3",
   "main": "dist/vue-column-explorer.umd.js",
   "module": "dist/vue-column-explorer.es.js",
@@ -29,7 +29,12 @@
   "peerDependencies": {
     "vue": "^3.4.0",
     "pinia": "^2.1.0",
-    "lucide-vue-next": "^0.344.0"
+    "lucide-vue-next": ">=0.344.0"
+  },
+  "peerDependenciesMeta": {
+    "lucide-vue-next": {
+      "optional": true
+    }
   },
   "keywords": [
     "vue",

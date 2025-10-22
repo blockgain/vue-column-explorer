@@ -1,5 +1,11 @@
 import type { ExplorerItem } from '../src/types'
 
+// Helper function to simulate API call delay
+export async function simulateApiCall<T>(data: T, delayMs: number = 1000): Promise<T> {
+  await new Promise(resolve => setTimeout(resolve, delayMs))
+  return data
+}
+
 export interface User {
   id: string
   fullName: string

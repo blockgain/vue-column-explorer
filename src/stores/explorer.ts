@@ -155,6 +155,11 @@ export const useExplorerStore = defineStore('explorer', {
       column.isLoading = true
       column.error = null
 
+      // Clear items on initial load (page 0) to show loading skeleton
+      if (page === 0) {
+        column.items = []
+      }
+
       try {
         const context = this.getContext
         const result = await column.config.dataProvider.fetch({
@@ -192,6 +197,7 @@ export const useExplorerStore = defineStore('explorer', {
       if (!column) return
 
       column.selectedIds.clear()
+      column.page = 0  // Reset page to 0
       await this.loadColumnData(index, 0)
     },
 

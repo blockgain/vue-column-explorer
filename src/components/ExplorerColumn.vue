@@ -63,8 +63,15 @@
       class="explorer-column__content"
       @scroll="handleScroll"
     >
-      <div v-if="columnState.isLoading && columnState.items.length === 0" class="explorer-column__loading">
-        <div v-for="i in loadingRows" :key="i" class="skeleton-item"></div>
+      <div v-if="showLoadingSkeleton" class="explorer-column__loading">
+        <div v-for="i in loadingRows" :key="i" class="skeleton-item">
+          <div class="skeleton-item__icon"></div>
+          <div class="skeleton-item__content">
+            <div class="skeleton-item__name"></div>
+            <div class="skeleton-item__metadata"></div>
+          </div>
+          <div class="skeleton-item__chevron"></div>
+        </div>
       </div>
 
       <div v-else-if="columnState.error" class="explorer-column__error">
@@ -72,11 +79,11 @@
         <button @click="handleRefresh">Retry</button>
       </div>
 
-      <div v-else-if="columnState.items.length === 0" class="explorer-column__empty">
+      <div v-else-if="columnState.items.length === 0 && !columnState.isLoading" class="explorer-column__empty">
         {{ emptyMessage }}
       </div>
 
-      <div v-else class="explorer-column__items">
+      <div v-else-if="columnState.items.length > 0" class="explorer-column__items">
         <ExplorerItem
           v-for="item in columnState.items"
           :key="item.id"
@@ -162,6 +169,11 @@ const loadingRows = computed(() => {
 
 const emptyMessage = computed(() => {
   return props.columnState.config.view?.emptyMessage || 'No items found'
+})
+
+const showLoadingSkeleton = computed(() => {
+  // Show skeleton when loading AND no items (initial load or refresh)
+  return props.columnState.isLoading && props.columnState.items.length === 0
 })
 
 const visibleActions = computed(() => {
@@ -341,7 +353,10 @@ const getIcon = (iconName: string) => {
   overflow-x: hidden;
 }
 
-.explorer-column__loading,
+.explorer-column__loading {
+  padding: 0;
+}
+
 .explorer-column__error,
 .explorer-column__empty {
   padding: 20px;
@@ -350,12 +365,55 @@ const getIcon = (iconName: string) => {
 }
 
 .skeleton-item {
-  height: 48px;
-  margin: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.skeleton-item__icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
   background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
+  flex-shrink: 0;
+}
+
+.skeleton-item__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.skeleton-item__name {
+  height: 14px;
+  width: 70%;
   border-radius: 4px;
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  margin-bottom: 4px;
+}
+
+.skeleton-item__metadata {
+  height: 12px;
+  width: 50%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+.skeleton-item__chevron {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  flex-shrink: 0;
 }
 
 @keyframes loading {
