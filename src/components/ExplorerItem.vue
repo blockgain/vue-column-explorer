@@ -3,7 +3,8 @@
     class="explorer-item"
     :class="{
       'explorer-item--selected': selected,
-      'explorer-item--clickable': clickable
+      'explorer-item--clickable': clickable && !item.disabled,
+      'explorer-item--disabled': item.disabled
     }"
     @click="handleClick"
     @dblclick="handleDoubleClick"
@@ -22,21 +23,23 @@
       </div>
       <div class="explorer-item__details">
         <div class="explorer-item__name">{{ item.name }}</div>
-        <div v-if="showMetadata && item.metadata" class="explorer-item__metadata">
-          {{ formatMetadata(item.metadata) }}
+        <div v-if="showMetadata && item.description" class="explorer-item__metadata">
+          {{ item.description }}
         </div>
       </div>
     </div>
-    <div v-if="item.count !== undefined || item.hasChildren" class="explorer-item__chevron">
-      <span v-if="item.count !== undefined" class="item-count">{{ item.count }}</span>
-      <ChevronRight :size="16" />
+    <div v-if="item.badge !== undefined || item.status !== undefined || item.count !== undefined || item.hasChildren" class="explorer-item__chevron">
+      <span v-if="item.badge !== undefined" :class="['item-badge', badgeColorClass]" :style="badgeStyle">{{ item.badge }}</span>
+      <span v-else-if="item.status !== undefined" class="item-status">{{ item.status }}</span>
+      <span v-else-if="item.count !== undefined" class="item-count">{{ item.count }}</span>
+      <ChevronRight v-if="item.hasChildren" :size="16" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { File, Folder, User, Book, FileText, Clipboard, ChevronRight } from 'lucide-vue-next'
+import * as LucideIcons from 'lucide-vue-next'
 import type { ExplorerItem as Item } from '../types'
 
 interface Props {
@@ -67,23 +70,59 @@ const emit = defineEmits<Emits>()
 
 const iconComponent = computed(() => {
   if (!props.item.icon) {
-    return props.item.type === 'folder' ? Folder : File
+    return props.item.type === 'folder' ? LucideIcons.Folder : LucideIcons.File
   }
 
-  const iconMap: Record<string, any> = {
-    'lucide:user': User,
-    'lucide:folder': Folder,
-    'lucide:file': File,
-    'lucide:book': Book,
-    'lucide:file-text': FileText,
-    'lucide:clipboard': Clipboard
+  // Support lucide:icon-name format
+  if (props.item.icon.startsWith('lucide:')) {
+    const iconName = props.item.icon.replace('lucide:', '')
+    // Convert kebab-case to PascalCase (e.g., 'building-2' -> 'Building2')
+    const pascalCaseName = iconName
+      .split('-')
+      .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+      .join('')
+
+    const IconComponent = (LucideIcons as any)[pascalCaseName]
+    if (IconComponent) {
+      return IconComponent
+    }
   }
 
-  return iconMap[props.item.icon] || File
+  // Fallback to File icon
+  return LucideIcons.File
+})
+
+const badgeColorClass = computed(() => {
+  const color = props.item.badgeColor
+  if (!color) return ''
+
+  // Preset colors
+  const presetColors = ['success', 'error', 'warning', 'info']
+  if (presetColors.includes(color.toLowerCase())) {
+    return `item-badge--${color.toLowerCase()}`
+  }
+
+  return ''
+})
+
+const badgeStyle = computed(() => {
+  const color = props.item.badgeColor
+  if (!color) return {}
+
+  // If it's not a preset color, treat it as a custom CSS color
+  const presetColors = ['success', 'error', 'warning', 'info']
+  if (!presetColors.includes(color.toLowerCase())) {
+    return {
+      backgroundColor: color,
+      color: '#ffffff'
+    }
+  }
+
+  return {}
 })
 
 const handleClick = (event: MouseEvent) => {
-  if (props.clickable) {
+  if (props.clickable && !props.item.disabled) {
     emit('click', props.item, event)
   }
 }
@@ -100,14 +139,6 @@ const handleCheckboxClick = (_event: Event) => {
   // If checkbox is visible (selectable=true), it means multiple selection is enabled
   // So always treat checkbox clicks as multiple selection (toggle behavior)
   emit('select', props.item, true)
-}
-
-const formatMetadata = (metadata: Record<string, any>): string => {
-  const entries = Object.entries(metadata)
-  if (entries.length === 0) return ''
-
-  const first = entries[0]
-  return String(first[1])
 }
 </script>
 
@@ -132,7 +163,30 @@ const formatMetadata = (metadata: Record<string, any>): string => {
 }
 
 .explorer-item--selected {
-  background-color: #dbeafe !important;
+  background-color: #3b82f6 !important;
+  border-left: 4px solid #1d4ed8;
+}
+
+.explorer-item--selected .explorer-item__name {
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+.explorer-item--selected .explorer-item__metadata {
+  color: #e0e7ff !important;
+}
+
+.explorer-item--selected .explorer-item__icon {
+  color: #ffffff !important;
+}
+
+.explorer-item--selected .explorer-item__chevron {
+  color: #ffffff !important;
+}
+
+.explorer-item--selected .item-count {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff !important;
 }
 
 .explorer-item__content {
@@ -206,5 +260,67 @@ const formatMetadata = (metadata: Record<string, any>): string => {
   border-radius: 10px;
   min-width: 20px;
   text-align: center;
+}
+
+.item-status {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.item-badge {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 2px 8px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.item-badge--success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.item-badge--error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.item-badge--warning {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.item-badge--info {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.explorer-item--selected .item-badge {
+  opacity: 0.9;
+}
+
+.explorer-item--disabled {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+}
+
+.explorer-item--disabled .explorer-item__name {
+  color: #9ca3af !important;
+}
+
+.explorer-item--disabled .explorer-item__icon {
+  color: #d1d5db !important;
+}
+
+.explorer-item--disabled:hover {
+  background-color: transparent !important;
 }
 </style>

@@ -1,18 +1,18 @@
 <template>
   <div class="explorer-container">
     <ExplorerBreadcrumb
-      v-if="store.breadcrumb.length > 0"
-      :breadcrumb="store.breadcrumb"
+      v-if="breadcrumb.length > 0"
+      :breadcrumb="breadcrumb"
       @navigate="handleBreadcrumbNavigate"
     />
 
     <div class="explorer-viewport">
       <ExplorerColumn
-        v-for="(column, index) in store.visibleColumns"
+        v-for="(column, index) in visibleColumns"
         :key="index"
         :column-state="column"
         :index="index"
-        :is-active="index === store.activeColumnIndex"
+        :is-active="index === activeColumnIndex"
         @item-click="handleItemClick"
         @item-select="handleItemSelect"
         @context-menu="handleContextMenu"
@@ -20,6 +20,7 @@
         @load-more="handleLoadMore"
         @action="handleAction"
         @filter-change="handleFilterChange"
+        @sort-change="handleSortChange"
       />
     </div>
 
@@ -36,7 +37,7 @@
 
 <script setup lang="ts">
 import { reactive } from 'vue'
-import { useExplorerStore } from '../stores/explorer'
+import { useExplorer } from '../composables/useExplorer'
 import ExplorerBreadcrumb from './ExplorerBreadcrumb.vue'
 import ExplorerColumn from './ExplorerColumn.vue'
 import ExplorerContextMenu from './ExplorerContextMenu.vue'
@@ -44,10 +45,27 @@ import type { ExplorerItem, ColumnObject, ActionHandler } from '../types'
 
 interface Props {
   rootColumn?: ColumnObject
+  context?: Record<string, any>
 }
 
 const props = defineProps<Props>()
-const store = useExplorerStore()
+const store = useExplorer(props.context)
+
+// Destructure for template access
+const {
+  breadcrumb,
+  visibleColumns,
+  activeColumnIndex,
+  openColumn,
+  selectItem,
+  navigateToItem,
+  navigateToBreadcrumb,
+  refreshColumn,
+  loadNextPage,
+  executeAction,
+  setFilter,
+  setSort
+} = store
 
 const contextMenu = reactive({
   visible: false,
@@ -60,22 +78,22 @@ const contextMenu = reactive({
 
 // Initialize root column if provided
 if (props.rootColumn) {
-  store.openColumn(props.rootColumn, 0)
+  openColumn(props.rootColumn, 0)
 }
 
 const handleItemClick = async (item: ExplorerItem, columnIndex: number) => {
   // Select the item first
-  store.selectItem(columnIndex, item.id, false)
+  selectItem(columnIndex, item.id, false)
 
   // Then navigate if configured
   const column = store.columns.get(columnIndex)
   if (column?.config.itemClick) {
-    await store.navigateToItem(item, columnIndex)
+    await navigateToItem(item, columnIndex)
   }
 }
 
 const handleItemSelect = (item: ExplorerItem, columnIndex: number, isMultiple: boolean) => {
-  store.selectItem(columnIndex, item.id, isMultiple)
+  selectItem(columnIndex, item.id, isMultiple)
 }
 
 const handleContextMenu = (item: ExplorerItem, columnIndex: number, event: MouseEvent) => {
@@ -84,13 +102,38 @@ const handleContextMenu = (item: ExplorerItem, columnIndex: number, event: Mouse
 
   // Select the item if not already selected
   if (!column.selectedIds.has(item.id)) {
-    store.selectItem(columnIndex, item.id, false)
+    selectItem(columnIndex, item.id, false)
   }
+
+  // Filter actions based on selection count
+  const selectedCount = column.selectedIds.size
+  const filteredActions = column.config.actions.filter(action => {
+    // If single item selected
+    if (selectedCount === 1) {
+      // Show only single select actions (or actions that work for both)
+      if (action.showOnSingleSelect !== undefined && !action.showOnSingleSelect) return false
+      if (action.showOnMultipleSelect === true && action.showOnSingleSelect !== undefined && !action.showOnSingleSelect) return false
+    }
+    // If multiple items selected
+    else if (selectedCount > 1) {
+      // Show only multiple select actions (or actions that work for both)
+      if (action.showOnMultipleSelect !== undefined && !action.showOnMultipleSelect) return false
+      if (action.showOnSingleSelect === true && action.showOnMultipleSelect !== undefined && !action.showOnMultipleSelect) return false
+    }
+
+    // Check custom visible function
+    const selectedItems = column.items.filter(i => column.selectedIds.has(i.id))
+    if (action.visible && !action.visible(selectedItems)) return false
+
+    return true
+  })
+
+  if (filteredActions.length === 0) return
 
   contextMenu.visible = true
   contextMenu.x = event.clientX
   contextMenu.y = event.clientY
-  contextMenu.actions = column.config.actions
+  contextMenu.actions = filteredActions
   contextMenu.targetItem = item
   contextMenu.targetColumnIndex = columnIndex
 }
@@ -101,35 +144,39 @@ const handleContextMenuClose = () => {
 
 const handleContextMenuAction = async (actionKey: string) => {
   if (contextMenu.targetColumnIndex >= 0) {
-    await store.executeAction(contextMenu.targetColumnIndex, actionKey)
+    await executeAction(contextMenu.targetColumnIndex, actionKey)
   }
 }
 
 const handleBreadcrumbNavigate = (index: number) => {
-  store.navigateToBreadcrumb(index)
+  navigateToBreadcrumb(index)
 }
 
 const handleRefresh = async (columnIndex: number) => {
-  await store.refreshColumn(columnIndex)
+  await refreshColumn(columnIndex)
 }
 
 const handleLoadMore = async (columnIndex: number) => {
-  await store.loadNextPage(columnIndex)
+  await loadNextPage(columnIndex)
 }
 
 const handleAction = async (actionKey: string, columnIndex: number) => {
-  await store.executeAction(columnIndex, actionKey)
+  await executeAction(columnIndex, actionKey)
 }
 
 const handleFilterChange = (filterKey: string, value: any, columnIndex: number) => {
-  store.setFilter(columnIndex, filterKey, value)
+  setFilter(columnIndex, filterKey, value)
+}
+
+const handleSortChange = (sortKey: string, columnIndex: number) => {
+  setSort(columnIndex, sortKey)
 }
 
 // Expose store for programmatic access
 defineExpose({
   store,
-  openColumn: (column: ColumnObject) => store.openColumn(column),
-  refresh: () => store.refreshColumn(store.activeColumnIndex)
+  openColumn: (column: ColumnObject) => openColumn(column),
+  refresh: () => refreshColumn(activeColumnIndex.value)
 })
 </script>
 

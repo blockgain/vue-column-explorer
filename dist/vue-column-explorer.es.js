@@ -1,239 +1,262 @@
-import { defineComponent as N, createElementBlock as i, openBlock as s, Fragment as I, renderList as w, createElementVNode as v, createBlock as $, createCommentVNode as g, normalizeClass as B, toDisplayString as y, unref as M, computed as A, withModifiers as U, resolveDynamicComponent as V, createVNode as z, ref as j, createStaticVNode as Z, createTextVNode as K, onMounted as ee, onUnmounted as te, Teleport as ne, normalizeStyle as le, reactive as oe } from "vue";
-import { defineStore as se } from "pinia";
-import { ChevronRight as W, Folder as G, File as R, Clipboard as ce, FileText as ie, Book as ae, User as re, Filter as ue, RefreshCw as de, Mail as me, Edit as X, Download as Y, Trash as J, Eye as he } from "lucide-vue-next";
-const fe = se("explorer", {
-  state: () => ({
-    columns: /* @__PURE__ */ new Map(),
-    activeColumnIndex: -1,
-    breadcrumb: [],
-    globalFilters: {},
-    config: {
-      appearance: {
-        columnWidth: 300,
-        maxVisibleColumns: 4,
-        animationDuration: 200,
-        theme: "light"
-      },
-      behavior: {
-        clickBehavior: "single",
-        selectionPersistence: !1,
-        autoLoadNextPage: !0,
-        scrollBehavior: "smooth"
-      },
-      performance: {
-        itemsPerPage: 50,
-        virtualScrollThreshold: 100,
-        maxConcurrentRequests: 2,
-        requestTimeout: 1e4
-      }
+import { reactive as ee, ref as P, computed as M, markRaw as Z, defineComponent as W, createElementBlock as r, openBlock as i, Fragment as E, renderList as L, createElementVNode as g, createBlock as R, createCommentVNode as C, normalizeClass as V, toDisplayString as I, unref as D, resolveComponent as ie, withModifiers as K, resolveDynamicComponent as G, normalizeStyle as te, createVNode as Y, createStaticVNode as ae, createTextVNode as re, onMounted as ue, onUnmounted as de, Teleport as me } from "vue";
+import * as X from "lucide-vue-next";
+import { ChevronRight as he, Filter as fe, RefreshCw as ve, Mail as ge, Edit as ne, Download as le, Trash as oe, Eye as be } from "lucide-vue-next";
+function ke(e) {
+  const m = ee(/* @__PURE__ */ new Map()), o = P(-1), d = P([]), u = P({}), h = P({
+    appearance: {
+      columnWidth: 300,
+      maxVisibleColumns: 4,
+      animationDuration: 200,
+      theme: "light"
+    },
+    behavior: {
+      clickBehavior: "single",
+      selectionPersistence: !1,
+      autoLoadNextPage: !0,
+      scrollBehavior: "smooth"
+    },
+    performance: {
+      itemsPerPage: 50,
+      virtualScrollThreshold: 100,
+      maxConcurrentRequests: 2,
+      requestTimeout: 1e4
     }
-  }),
-  getters: {
-    visibleColumns() {
-      const e = [];
-      for (let o = 0; o <= this.activeColumnIndex; o++) {
-        const t = this.columns.get(o);
-        t && e.push(t);
-      }
-      return e;
-    },
-    currentSelection() {
-      const e = this.columns.get(this.activeColumnIndex);
-      return (e == null ? void 0 : e.selectedIds) || /* @__PURE__ */ new Set();
-    },
-    canNavigateForward() {
-      const e = this.columns.get(this.activeColumnIndex);
-      return e ? e.selectedIds.size > 0 : !1;
-    },
-    getContext() {
-      var t;
-      const e = [];
-      for (let n = 0; n <= this.activeColumnIndex; n++) {
-        const l = this.columns.get(n);
-        if (l) {
-          const a = Array.from(l.selectedIds)[0], r = a && l.items.find((f) => f.id === a) || null;
-          e.push({
-            columnId: l.config.id,
-            selectedItem: r,
-            selectedIds: l.selectedIds
-          });
-        }
-      }
-      const o = e[e.length - 2];
-      return {
-        parentId: ((t = o == null ? void 0 : o.selectedItem) == null ? void 0 : t.id) || null,
-        parentItem: (o == null ? void 0 : o.selectedItem) || null,
-        breadcrumb: this.breadcrumb,
-        globalFilters: this.globalFilters,
-        columnChain: e,
-        getParentData(n) {
-          return e[e.length - 1 - n];
-        },
-        getColumnData(n) {
-          return e.find((l) => l.columnId === n);
-        }
-      };
+  }), k = M(() => {
+    const s = [];
+    for (let l = 0; l <= o.value; l++) {
+      const n = m.get(l);
+      n && s.push(n);
     }
-  },
-  actions: {
-    setConfig(e) {
-      this.config = {
-        appearance: { ...this.config.appearance, ...e.appearance },
-        behavior: { ...this.config.behavior, ...e.behavior },
-        performance: { ...this.config.performance, ...e.performance }
-      };
-    },
-    async openColumn(e, o) {
-      const t = o ?? this.activeColumnIndex + 1;
-      for (let l = this.columns.size - 1; l > t; l--)
-        this.columns.delete(l);
-      const n = {
-        config: e,
-        items: [],
-        selectedIds: /* @__PURE__ */ new Set(),
-        page: 0,
-        hasMore: !0,
-        isLoading: !1,
-        error: null,
-        filters: {}
-      };
-      this.columns.set(t, n), this.activeColumnIndex = t, t === 0 && (this.breadcrumb = [{
-        columnId: e.id,
-        columnName: e.name
-      }]), await this.loadColumnData(t);
-    },
-    async loadColumnData(e, o = 0) {
-      const t = this.columns.get(e);
-      if (t) {
-        t.isLoading = !0, t.error = null, o === 0 && (t.items = []);
-        try {
-          const n = this.getContext, l = await t.config.dataProvider.fetch({
-            parentId: n.parentId,
-            page: o,
-            filters: { ...this.globalFilters, ...t.filters },
-            context: n
-          });
-          o === 0 ? t.items = l.items : t.items.push(...l.items), t.hasMore = l.hasMore, t.page = o;
-        } catch (n) {
-          t.error = n, console.error("Error loading column data:", n);
-        } finally {
-          t.isLoading = !1;
-        }
-      }
-    },
-    async loadNextPage(e) {
-      const o = this.columns.get(e);
-      !o || !o.hasMore || o.isLoading || await this.loadColumnData(e, o.page + 1);
-    },
-    async refreshColumn(e) {
-      const o = this.columns.get(e);
-      o && (o.selectedIds.clear(), o.page = 0, await this.loadColumnData(e, 0));
-    },
-    selectItem(e, o, t = !1) {
-      var l;
-      const n = this.columns.get(e);
-      !n || !((l = n.config.selection) != null && l.enabled) || (t && n.config.selection.multiple ? n.selectedIds.has(o) ? n.selectedIds.delete(o) : n.selectedIds.add(o) : (n.selectedIds.clear(), n.selectedIds.add(o)));
-    },
-    clearSelection(e) {
-      const o = this.columns.get(e);
-      o && o.selectedIds.clear();
-    },
-    async navigateToItem(e, o) {
-      var a, r, f;
-      const t = this.columns.get(o);
-      if (!t || !t.config.itemClick) return;
-      const n = this.getContext, l = await ((r = (a = t.config.itemClick).handler) == null ? void 0 : r.call(a, e, n));
-      if (l != null && l.column)
-        this.breadcrumb = this.breadcrumb.slice(0, o + 1), await this.openColumn(l.column, o + 1), this.breadcrumb.push({
-          columnId: l.column.id,
-          columnName: e.name,
-          // Show selected item name in breadcrumb
-          itemId: e.id,
-          itemName: e.name
+    return s;
+  }), p = M(() => {
+    const s = m.get(o.value);
+    return (s == null ? void 0 : s.selectedIds) || /* @__PURE__ */ new Set();
+  }), x = M(() => {
+    const s = m.get(o.value);
+    return !!(s && s.selectedIds.size > 0);
+  }), O = M(() => {
+    const s = [];
+    for (let t = 0; t <= o.value; t++) {
+      const c = m.get(t);
+      if (c) {
+        const S = c.items.find(
+          (a) => c.selectedIds.has(a.id)
+        );
+        s.push({
+          columnId: c.config.id,
+          selectedItem: S || null,
+          selectedIds: new Set(c.selectedIds)
         });
-      else if (l != null && l.action) {
-        const x = (f = t.config.actions) == null ? void 0 : f.find((_) => _.key === l.action);
-        x && await this.executeAction(o, x.key);
-      } else l != null && l.custom && l.custom();
-    },
-    async executeAction(e, o) {
-      var a;
-      const t = this.columns.get(e);
-      if (!t) return;
-      const n = (a = t.config.actions) == null ? void 0 : a.find((r) => r.key === o);
-      if (!n) return;
-      const l = Array.from(t.selectedIds);
-      if (l.length !== 0)
-        try {
-          const r = this.getContext;
-          await n.handler(l, r), await this.refreshColumn(e);
-        } catch (r) {
-          console.error("Error executing action:", r);
+      }
+    }
+    const l = o.value > 0 ? m.get(o.value - 1) : null, n = l ? l.items.find((t) => l.selectedIds.has(t.id)) : null;
+    return {
+      parentId: (n == null ? void 0 : n.id) || null,
+      parentItem: n || null,
+      breadcrumb: d.value,
+      globalFilters: u.value,
+      columnChain: s,
+      external: e,
+      // Include external context
+      getParentData(t) {
+        const c = o.value - t;
+        return s[c];
+      },
+      getColumnData(t) {
+        return s.find((c) => c.columnId === t);
+      }
+    };
+  });
+  function $(s) {
+    h.value = {
+      appearance: { ...h.value.appearance, ...s.appearance },
+      behavior: { ...h.value.behavior, ...s.behavior },
+      performance: { ...h.value.performance, ...s.performance }
+    };
+  }
+  async function v(s, l) {
+    const n = l ?? o.value + 1;
+    for (let c = m.size - 1; c > n; c--)
+      m.delete(c);
+    const t = {
+      config: Z(s),
+      items: [],
+      selectedIds: /* @__PURE__ */ new Set(),
+      page: 0,
+      hasMore: !0,
+      isLoading: !1,
+      error: null,
+      filters: {}
+    };
+    m.set(n, t), o.value = n, n === 0 && (d.value = [{
+      columnId: s.id,
+      columnName: s.name
+    }]), await _(n);
+  }
+  async function _(s, l = 0) {
+    const n = m.get(s);
+    if (n) {
+      n.isLoading = !0, n.error = null, l === 0 && (n.items = []);
+      try {
+        const t = O.value, c = await n.config.dataProvider.fetch({
+          parentId: t.parentId,
+          page: l,
+          filters: { ...u.value, ...n.filters },
+          context: t
+        });
+        let S = c.items;
+        if (n.currentSort && n.config.sortOptions) {
+          const a = n.config.sortOptions.find((f) => f.key === n.currentSort);
+          a && (S = [...S].sort(a.sortFn));
         }
-    },
-    navigateToBreadcrumb(e) {
-      for (let o = this.columns.size - 1; o > e; o--)
-        this.columns.delete(o);
-      this.activeColumnIndex = e, this.breadcrumb = this.breadcrumb.slice(0, e + 1);
-    },
-    setFilter(e, o, t) {
-      const n = this.columns.get(e);
-      n && (t == null || t === "" ? delete n.filters[o] : n.filters[o] = t, this.loadColumnData(e, 0));
-    },
-    setGlobalFilter(e, o) {
-      o == null || o === "" ? delete this.globalFilters[e] : this.globalFilters[e] = o, this.visibleColumns.forEach((t, n) => {
-        this.loadColumnData(n, 0);
-      });
+        l === 0 ? n.items = S : n.items.push(...S), n.hasMore = c.hasMore, n.page = l;
+      } catch (t) {
+        n.error = t, console.error("Error loading column data:", t);
+      } finally {
+        n.isLoading = !1;
+      }
     }
   }
-}), ve = { class: "explorer-breadcrumb" }, be = ["onClick"], ge = /* @__PURE__ */ N({
+  async function B(s) {
+    const l = m.get(s);
+    !l || !l.hasMore || l.isLoading || await _(s, l.page + 1);
+  }
+  async function N(s) {
+    const l = m.get(s);
+    l && (l.selectedIds.clear(), l.page = 0, await _(s, 0));
+  }
+  function q(s, l, n = !1) {
+    var c;
+    const t = m.get(s);
+    !t || !((c = t.config.selection) != null && c.enabled) || (n && t.config.selection.multiple ? t.selectedIds.has(l) ? t.selectedIds.delete(l) : t.selectedIds.add(l) : (t.selectedIds.clear(), t.selectedIds.add(l)));
+  }
+  function y(s) {
+    const l = m.get(s);
+    l && l.selectedIds.clear();
+  }
+  async function z(s, l) {
+    var S, a, f;
+    const n = m.get(l);
+    if (!n || !n.config.itemClick) return;
+    const t = O.value, c = await ((a = (S = n.config.itemClick).handler) == null ? void 0 : a.call(S, s, t));
+    if (c != null && c.column)
+      d.value = d.value.slice(0, l + 1), await v(Z(c.column), l + 1), d.value.push({
+        columnId: c.column.id,
+        columnName: s.name,
+        itemId: s.id,
+        itemName: s.name
+      });
+    else if (c != null && c.action) {
+      const b = (f = n.config.actions) == null ? void 0 : f.find((w) => w.key === c.action);
+      b && await T(l, b.key);
+    } else c != null && c.custom && c.custom();
+  }
+  async function T(s, l) {
+    var S;
+    const n = m.get(s);
+    if (!n) return;
+    const t = (S = n.config.actions) == null ? void 0 : S.find((a) => a.key === l);
+    if (!t) return;
+    const c = Array.from(n.selectedIds);
+    if (c.length !== 0)
+      try {
+        const a = O.value;
+        await t.handler(c, a), console.log("[executeAction] skipRefresh:", t.skipRefresh, "actionKey:", l), t.skipRefresh ? console.log("[executeAction] Skipping refresh for column", s) : (console.log("[executeAction] Refreshing column", s), await N(s));
+      } catch (a) {
+        console.error("Error executing action:", a);
+      }
+  }
+  function U(s) {
+    for (let l = m.size - 1; l > s; l--)
+      m.delete(l);
+    o.value = s, d.value = d.value.slice(0, s + 1);
+  }
+  function F(s, l, n) {
+    const t = m.get(s);
+    t && (n == null || n === "" ? delete t.filters[l] : t.filters[l] = n, _(s, 0));
+  }
+  function H(s, l) {
+    const n = m.get(s);
+    n && (l == null || l === "" ? n.currentSort = void 0 : n.currentSort = l, _(s, 0));
+  }
+  return {
+    // State
+    columns: m,
+    activeColumnIndex: o,
+    breadcrumb: d,
+    globalFilters: u,
+    config: h,
+    // Getters
+    visibleColumns: k,
+    currentSelection: p,
+    canNavigateForward: x,
+    getContext: O,
+    // Actions
+    setConfig: $,
+    openColumn: v,
+    loadColumnData: _,
+    loadNextPage: B,
+    refreshColumn: N,
+    selectItem: q,
+    clearSelection: y,
+    navigateToItem: z,
+    executeAction: T,
+    navigateToBreadcrumb: U,
+    setFilter: F,
+    setSort: H
+  };
+}
+const Ce = { class: "explorer-breadcrumb" }, pe = ["onClick"], ye = /* @__PURE__ */ W({
   __name: "ExplorerBreadcrumb",
   props: {
     breadcrumb: {}
   },
   emits: ["navigate"],
-  setup(e, { emit: o }) {
-    const t = o, n = (l) => {
-      t("navigate", l);
+  setup(e, { emit: m }) {
+    const o = m, d = (u) => {
+      o("navigate", u);
     };
-    return (l, a) => (s(), i("div", ve, [
-      (s(!0), i(I, null, w(e.breadcrumb, (r, f) => (s(), i("div", {
-        key: f,
+    return (u, h) => (i(), r("div", Ce, [
+      (i(!0), r(E, null, L(e.breadcrumb, (k, p) => (i(), r("div", {
+        key: p,
         class: "breadcrumb-item"
       }, [
-        v("button", {
-          class: B(["breadcrumb-item__button", { "breadcrumb-item__button--active": f === e.breadcrumb.length - 1 }]),
-          onClick: (x) => n(f)
-        }, y(r.itemName || r.columnName), 11, be),
-        f < e.breadcrumb.length - 1 ? (s(), $(M(W), {
+        g("button", {
+          class: V(["breadcrumb-item__button", { "breadcrumb-item__button--active": p === e.breadcrumb.length - 1 }]),
+          onClick: (x) => d(p)
+        }, I(k.itemName || k.columnName), 11, pe),
+        p < e.breadcrumb.length - 1 ? (i(), R(D(he), {
           key: 0,
           size: 16,
           class: "breadcrumb-separator"
-        })) : g("", !0)
+        })) : C("", !0)
       ]))), 128))
     ]));
   }
-}), L = (e, o) => {
-  const t = e.__vccOpts || e;
-  for (const [n, l] of o)
-    t[n] = l;
-  return t;
-}, xe = /* @__PURE__ */ L(ge, [["__scopeId", "data-v-27ca8931"]]), ke = {
+}), j = (e, m) => {
+  const o = e.__vccOpts || e;
+  for (const [d, u] of m)
+    o[d] = u;
+  return o;
+}, Se = /* @__PURE__ */ j(ye, [["__scopeId", "data-v-27ca8931"]]), xe = {
   key: 0,
   class: "explorer-item__checkbox"
-}, Ce = ["checked"], pe = { class: "explorer-item__content" }, ye = {
+}, _e = ["checked"], we = { class: "explorer-item__content" }, Ie = {
   key: 0,
   class: "explorer-item__icon"
-}, _e = { class: "explorer-item__details" }, Se = { class: "explorer-item__name" }, Ie = {
+}, Me = { class: "explorer-item__details" }, $e = { class: "explorer-item__name" }, Oe = {
   key: 0,
   class: "explorer-item__metadata"
-}, we = {
+}, Ae = {
   key: 1,
   class: "explorer-item__chevron"
-}, Me = {
-  key: 0,
+}, Be = {
+  key: 1,
+  class: "item-status"
+}, Ne = {
+  key: 2,
   class: "item-count"
-}, $e = /* @__PURE__ */ N({
+}, Ee = /* @__PURE__ */ W({
   __name: "ExplorerItem",
   props: {
     item: {},
@@ -244,234 +267,274 @@ const fe = se("explorer", {
     showMetadata: { type: Boolean, default: !0 }
   },
   emits: ["click", "dblclick", "contextmenu", "select"],
-  setup(e, { emit: o }) {
-    const t = e, n = o, l = A(() => t.item.icon ? {
-      "lucide:user": re,
-      "lucide:folder": G,
-      "lucide:file": R,
-      "lucide:book": ae,
-      "lucide:file-text": ie,
-      "lucide:clipboard": ce
-    }[t.item.icon] || R : t.item.type === "folder" ? G : R), a = (h) => {
-      t.clickable && n("click", t.item, h);
-    }, r = (h) => {
-      n("dblclick", t.item, h);
-    }, f = (h) => {
-      n("contextmenu", t.item, h);
-    }, x = (h) => {
-      n("select", t.item, !0);
-    }, _ = (h) => {
-      const S = Object.entries(h);
-      if (S.length === 0) return "";
-      const E = S[0];
-      return String(E[1]);
+  setup(e, { emit: m }) {
+    const o = e, d = m, u = M(() => {
+      if (!o.item.icon)
+        return o.item.type === "folder" ? X.Folder : X.File;
+      if (o.item.icon.startsWith("lucide:")) {
+        const _ = o.item.icon.replace("lucide:", "").split("-").map((N) => N.charAt(0).toUpperCase() + N.slice(1)).join(""), B = X[_];
+        if (B)
+          return B;
+      }
+      return X.File;
+    }), h = M(() => {
+      const v = o.item.badgeColor;
+      return v && ["success", "error", "warning", "info"].includes(v.toLowerCase()) ? `item-badge--${v.toLowerCase()}` : "";
+    }), k = M(() => {
+      const v = o.item.badgeColor;
+      return v ? ["success", "error", "warning", "info"].includes(v.toLowerCase()) ? {} : {
+        backgroundColor: v,
+        color: "#ffffff"
+      } : {};
+    }), p = (v) => {
+      o.clickable && !o.item.disabled && d("click", o.item, v);
+    }, x = (v) => {
+      d("dblclick", o.item, v);
+    }, O = (v) => {
+      d("contextmenu", o.item, v);
+    }, $ = (v) => {
+      d("select", o.item, !0);
     };
-    return (h, S) => (s(), i("div", {
-      class: B(["explorer-item", {
-        "explorer-item--selected": e.selected,
-        "explorer-item--clickable": e.clickable
-      }]),
-      onClick: a,
-      onDblclick: r,
-      onContextmenu: U(f, ["prevent"])
-    }, [
-      e.selectable ? (s(), i("div", ke, [
-        v("input", {
-          type: "checkbox",
-          checked: e.selected,
-          onClick: U(x, ["stop"])
-        }, null, 8, Ce)
-      ])) : g("", !0),
-      v("div", pe, [
-        e.showIcon ? (s(), i("div", ye, [
-          (s(), $(V(l.value), { size: 20 }))
-        ])) : g("", !0),
-        v("div", _e, [
-          v("div", Se, y(e.item.name), 1),
-          e.showMetadata && e.item.metadata ? (s(), i("div", Ie, y(_(e.item.metadata)), 1)) : g("", !0)
-        ])
-      ]),
-      e.item.count !== void 0 || e.item.hasChildren ? (s(), i("div", we, [
-        e.item.count !== void 0 ? (s(), i("span", Me, y(e.item.count), 1)) : g("", !0),
-        z(M(W), { size: 16 })
-      ])) : g("", !0)
-    ], 34));
+    return (v, _) => {
+      const B = ie("ChevronRight");
+      return i(), r("div", {
+        class: V(["explorer-item", {
+          "explorer-item--selected": e.selected,
+          "explorer-item--clickable": e.clickable && !e.item.disabled,
+          "explorer-item--disabled": e.item.disabled
+        }]),
+        onClick: p,
+        onDblclick: x,
+        onContextmenu: K(O, ["prevent"])
+      }, [
+        e.selectable ? (i(), r("div", xe, [
+          g("input", {
+            type: "checkbox",
+            checked: e.selected,
+            onClick: K($, ["stop"])
+          }, null, 8, _e)
+        ])) : C("", !0),
+        g("div", we, [
+          e.showIcon ? (i(), r("div", Ie, [
+            (i(), R(G(u.value), { size: 20 }))
+          ])) : C("", !0),
+          g("div", Me, [
+            g("div", $e, I(e.item.name), 1),
+            e.showMetadata && e.item.description ? (i(), r("div", Oe, I(e.item.description), 1)) : C("", !0)
+          ])
+        ]),
+        e.item.badge !== void 0 || e.item.status !== void 0 || e.item.count !== void 0 || e.item.hasChildren ? (i(), r("div", Ae, [
+          e.item.badge !== void 0 ? (i(), r("span", {
+            key: 0,
+            class: V(["item-badge", h.value]),
+            style: te(k.value)
+          }, I(e.item.badge), 7)) : e.item.status !== void 0 ? (i(), r("span", Be, I(e.item.status), 1)) : e.item.count !== void 0 ? (i(), r("span", Ne, I(e.item.count), 1)) : C("", !0),
+          e.item.hasChildren ? (i(), R(B, {
+            key: 3,
+            size: 16
+          })) : C("", !0)
+        ])) : C("", !0)
+      ], 34);
+    };
   }
-}), Ae = /* @__PURE__ */ L($e, [["__scopeId", "data-v-b2b4e9d4"]]), Ee = { class: "explorer-column__header" }, Fe = { class: "explorer-column__title" }, Be = { class: "explorer-column__actions" }, Ne = {
+}), Le = /* @__PURE__ */ j(Ee, [["__scopeId", "data-v-ed186481"]]), Re = { class: "explorer-column__header" }, Fe = { class: "explorer-column__title" }, De = { class: "explorer-column__actions" }, ze = {
   key: 0,
   class: "explorer-column__filters"
-}, Le = { class: "filter-item__label" }, De = ["placeholder", "value", "onInput"], ze = ["placeholder", "value", "onInput"], Oe = ["value", "onChange"], Te = ["value"], Pe = {
+}, Te = {
+  key: 0,
+  class: "filter-item"
+}, Pe = ["value"], Ve = ["value"], qe = { class: "filter-item__label" }, Ue = ["placeholder", "value", "onInput"], He = ["placeholder", "value", "onInput"], We = ["value", "onChange"], je = ["value"], Xe = {
   key: 0,
   class: "explorer-column__loading"
-}, Re = {
+}, Ye = {
   key: 1,
   class: "explorer-column__error"
-}, Ve = {
+}, Ge = {
+  key: 0,
+  class: "error-message"
+}, Je = {
   key: 2,
   class: "explorer-column__empty"
-}, qe = {
+}, Qe = {
   key: 3,
   class: "explorer-column__items"
-}, He = {
+}, Ze = {
   key: 0,
   class: "explorer-column__loading-more"
-}, Ue = {
+}, Ke = {
   key: 1,
   class: "explorer-column__footer"
-}, je = { class: "explorer-column__selection-info" }, Ge = { class: "explorer-column__quick-actions" }, We = ["onClick"], Xe = /* @__PURE__ */ N({
+}, et = { class: "explorer-column__selection-info" }, tt = { class: "explorer-column__quick-actions" }, nt = ["onClick"], lt = /* @__PURE__ */ W({
   __name: "ExplorerColumn",
   props: {
     columnState: {},
     index: {},
     isActive: { type: Boolean }
   },
-  emits: ["item-click", "item-select", "context-menu", "refresh", "load-more", "action", "filter-change"],
-  setup(e, { emit: o }) {
-    const t = e, n = o, l = j(null), a = j(!1), r = A(() => t.columnState.config.filters && t.columnState.config.filters.length > 0), f = A(() => t.columnState.selectedIds.size > 0), x = A(() => {
-      var d;
-      return ((d = t.columnState.config.view) == null ? void 0 : d.loadingRows) || 10;
-    }), _ = A(() => {
-      var d;
-      return ((d = t.columnState.config.view) == null ? void 0 : d.emptyMessage) || "No items found";
-    }), h = A(() => t.columnState.isLoading && t.columnState.items.length === 0), S = A(() => {
-      if (!t.columnState.config.actions) return [];
-      const d = t.columnState.items.filter(
-        (c) => t.columnState.selectedIds.has(c.id)
-      ), m = d.length;
-      return t.columnState.config.actions.filter((c) => m === 1 && c.showOnSingleSelect === !1 || m > 1 && c.showOnMultipleSelect === !1 || m === 1 && c.showOnMultipleSelect === !0 && c.showOnSingleSelect === !1 || m > 1 && c.showOnSingleSelect === !0 && c.showOnMultipleSelect === !1 ? !1 : c.visible ? c.visible(d) : !0);
-    }), E = () => {
-      a.value = !a.value;
-    }, O = (d, m) => {
-      n("item-click", d, t.index);
-    }, T = (d, m) => {
-      n("item-select", d, t.index, m);
-    }, u = (d, m) => {
-      n("context-menu", d, t.index, m);
-    }, b = () => {
-      n("refresh", t.index);
-    }, k = () => {
-      if (!l.value) return;
-      const { scrollTop: d, scrollHeight: m, clientHeight: c } = l.value;
-      d + c >= m - 100 && t.columnState.hasMore && !t.columnState.isLoading && n("load-more", t.index);
-    }, p = (d) => {
-      n("action", d, t.index);
-    }, P = (d, m) => {
-      n("filter-change", d, m, t.index);
-    }, Q = (d) => ({
-      "lucide:trash": J,
-      "lucide:download": Y,
-      "lucide:edit": X,
-      "lucide:mail": me
-    })[d] || null;
-    return (d, m) => (s(), i("div", {
-      class: B(["explorer-column", { "explorer-column--active": e.isActive }])
+  emits: ["item-click", "item-select", "context-menu", "refresh", "load-more", "action", "filter-change", "sort-change"],
+  setup(e, { emit: m }) {
+    const o = e, d = m, u = P(null), h = P(!1), k = M(() => o.columnState.config.filters && o.columnState.config.filters.length > 0), p = M(() => o.columnState.config.sortOptions && o.columnState.config.sortOptions.length > 0), x = M(() => o.columnState.selectedIds.size > 0), O = M(() => {
+      var l;
+      return ((l = o.columnState.config.view) == null ? void 0 : l.loadingRows) || 10;
+    }), $ = M(() => {
+      var l;
+      return ((l = o.columnState.config.view) == null ? void 0 : l.emptyMessage) || "No items found";
+    }), v = M(() => o.columnState.isLoading && o.columnState.items.length === 0), _ = M(() => {
+      if (!o.columnState.config.actions) return [];
+      const l = o.columnState.items.filter(
+        (t) => o.columnState.selectedIds.has(t.id)
+      ), n = l.length;
+      return o.columnState.config.actions.filter((t) => n === 1 && t.showOnSingleSelect === !1 || n > 1 && t.showOnMultipleSelect === !1 || n === 1 && t.showOnMultipleSelect === !0 && t.showOnSingleSelect === !1 || n > 1 && t.showOnSingleSelect === !0 && t.showOnMultipleSelect === !1 ? !1 : t.visible ? t.visible(l) : !0);
+    }), B = () => {
+      h.value = !h.value;
+    }, N = (l, n) => {
+      d("item-click", l, o.index);
+    }, q = (l, n) => {
+      d("item-select", l, o.index, n);
+    }, y = (l, n) => {
+      d("context-menu", l, o.index, n);
+    }, z = () => {
+      d("refresh", o.index);
+    }, T = () => {
+      if (!u.value) return;
+      const { scrollTop: l, scrollHeight: n, clientHeight: t } = u.value;
+      l + t >= n - 100 && o.columnState.hasMore && !o.columnState.isLoading && d("load-more", o.index);
+    }, U = (l) => {
+      d("action", l, o.index);
+    }, F = (l, n) => {
+      d("filter-change", l, n, o.index);
+    }, H = (l) => {
+      d("sort-change", l, o.index);
+    }, s = (l) => ({
+      "lucide:trash": oe,
+      "lucide:download": le,
+      "lucide:edit": ne,
+      "lucide:mail": ge
+    })[l] || null;
+    return (l, n) => (i(), r("div", {
+      class: V(["explorer-column", { "explorer-column--active": e.isActive }])
     }, [
-      v("div", Ee, [
-        v("h3", Fe, y(e.columnState.config.name), 1),
-        v("div", Be, [
-          r.value ? (s(), i("button", {
+      g("div", Re, [
+        g("h3", Fe, I(e.columnState.config.name), 1),
+        g("div", De, [
+          k.value || p.value ? (i(), r("button", {
             key: 0,
-            class: B(["explorer-column__filter-btn", { active: a.value }]),
-            onClick: E
+            class: V(["explorer-column__filter-btn", { active: h.value }]),
+            onClick: B
           }, [
-            z(M(ue), { size: 16 })
-          ], 2)) : g("", !0),
-          v("button", {
+            Y(D(fe), { size: 16 })
+          ], 2)) : C("", !0),
+          g("button", {
             class: "explorer-column__refresh-btn",
-            onClick: b
+            onClick: z
           }, [
-            z(M(de), { size: 16 })
+            Y(D(ve), { size: 16 })
           ])
         ])
       ]),
-      a.value && r.value ? (s(), i("div", Ne, [
-        (s(!0), i(I, null, w(e.columnState.config.filters, (c) => (s(), i("div", {
-          key: c.key,
+      h.value && (k.value || p.value) ? (i(), r("div", ze, [
+        p.value ? (i(), r("div", Te, [
+          n[2] || (n[2] = g("label", { class: "filter-item__label" }, "Sıralama", -1)),
+          g("select", {
+            class: "filter-item__select",
+            value: e.columnState.currentSort || "",
+            onChange: n[0] || (n[0] = (t) => H(t.target.value))
+          }, [
+            n[1] || (n[1] = g("option", { value: "" }, "Varsayılan", -1)),
+            (i(!0), r(E, null, L(e.columnState.config.sortOptions, (t) => (i(), r("option", {
+              key: t.key,
+              value: t.key
+            }, I(t.label), 9, Ve))), 128))
+          ], 40, Pe)
+        ])) : C("", !0),
+        (i(!0), r(E, null, L(e.columnState.config.filters, (t) => (i(), r("div", {
+          key: t.key,
           class: "filter-item"
         }, [
-          v("label", Le, y(c.label), 1),
-          c.type === "search" ? (s(), i("input", {
+          g("label", qe, I(t.label), 1),
+          t.type === "search" ? (i(), r("input", {
             key: 0,
             type: "text",
             class: "filter-item__input",
-            placeholder: `Search ${c.label.toLowerCase()}...`,
-            value: e.columnState.filters[c.key] || "",
-            onInput: (C) => P(c.key, C.target.value)
-          }, null, 40, De)) : c.type === "number" ? (s(), i("input", {
+            placeholder: `Search ${t.label.toLowerCase()}...`,
+            value: e.columnState.filters[t.key] || "",
+            onInput: (c) => F(t.key, c.target.value)
+          }, null, 40, Ue)) : t.type === "number" ? (i(), r("input", {
             key: 1,
             type: "number",
             class: "filter-item__input",
-            placeholder: c.label,
-            value: e.columnState.filters[c.key] || "",
-            onInput: (C) => P(c.key, C.target.value)
-          }, null, 40, ze)) : c.type === "select" ? (s(), i("select", {
+            placeholder: t.label,
+            value: e.columnState.filters[t.key] || "",
+            onInput: (c) => F(t.key, c.target.value)
+          }, null, 40, He)) : t.type === "select" ? (i(), r("select", {
             key: 2,
             class: "filter-item__select",
-            value: e.columnState.filters[c.key] || "",
-            onChange: (C) => P(c.key, C.target.value)
+            value: e.columnState.filters[t.key] || "",
+            onChange: (c) => F(t.key, c.target.value)
           }, [
-            m[0] || (m[0] = v("option", { value: "" }, "All", -1)),
-            (s(!0), i(I, null, w(c.options, (C) => (s(), i("option", {
-              key: C.value,
-              value: C.value
-            }, y(C.label), 9, Te))), 128))
-          ], 40, Oe)) : g("", !0)
+            n[3] || (n[3] = g("option", { value: "" }, "All", -1)),
+            (i(!0), r(E, null, L(t.options, (c) => (i(), r("option", {
+              key: c.value,
+              value: c.value
+            }, I(c.label), 9, je))), 128))
+          ], 40, We)) : C("", !0)
         ]))), 128))
-      ])) : g("", !0),
-      v("div", {
+      ])) : C("", !0),
+      g("div", {
         ref_key: "scrollContainer",
-        ref: l,
+        ref: u,
         class: "explorer-column__content",
-        onScroll: k
+        onScroll: T
       }, [
-        h.value ? (s(), i("div", Pe, [
-          (s(!0), i(I, null, w(x.value, (c) => (s(), i("div", {
-            key: c,
+        v.value ? (i(), r("div", Xe, [
+          (i(!0), r(E, null, L(O.value, (t) => (i(), r("div", {
+            key: t,
             class: "skeleton-item"
-          }, [...m[1] || (m[1] = [
-            Z('<div class="skeleton-item__icon" data-v-b8fd4b62></div><div class="skeleton-item__content" data-v-b8fd4b62><div class="skeleton-item__name" data-v-b8fd4b62></div><div class="skeleton-item__metadata" data-v-b8fd4b62></div></div><div class="skeleton-item__chevron" data-v-b8fd4b62></div>', 3)
+          }, [...n[4] || (n[4] = [
+            ae('<div class="skeleton-item__icon" data-v-4cc9db4b></div><div class="skeleton-item__content" data-v-4cc9db4b><div class="skeleton-item__name" data-v-4cc9db4b></div><div class="skeleton-item__metadata" data-v-4cc9db4b></div></div><div class="skeleton-item__chevron" data-v-4cc9db4b></div>', 3)
           ])]))), 128))
-        ])) : e.columnState.error ? (s(), i("div", Re, [
-          m[2] || (m[2] = v("p", null, "Error loading data", -1)),
-          v("button", { onClick: b }, "Retry")
-        ])) : e.columnState.items.length === 0 && !e.columnState.isLoading ? (s(), i("div", Ve, y(_.value), 1)) : e.columnState.items.length > 0 ? (s(), i("div", qe, [
-          (s(!0), i(I, null, w(e.columnState.items, (c) => {
-            var C, q, H;
-            return s(), $(Ae, {
-              key: c.id,
-              item: c,
-              selected: e.columnState.selectedIds.has(c.id),
-              selectable: ((C = e.columnState.config.selection) == null ? void 0 : C.multiple) ?? !1,
+        ])) : e.columnState.error ? (i(), r("div", Ye, [
+          n[5] || (n[5] = g("p", null, "Error loading data", -1)),
+          e.columnState.error.message ? (i(), r("p", Ge, I(e.columnState.error.message), 1)) : C("", !0),
+          g("button", { onClick: z }, "Retry")
+        ])) : e.columnState.items.length === 0 && !e.columnState.isLoading ? (i(), r("div", Je, I($.value), 1)) : e.columnState.items.length > 0 ? (i(), r("div", Qe, [
+          (i(!0), r(E, null, L(e.columnState.items, (t) => {
+            var c, S, a;
+            return i(), R(Le, {
+              key: t.id,
+              item: t,
+              selected: e.columnState.selectedIds.has(t.id),
+              selectable: ((c = e.columnState.config.selection) == null ? void 0 : c.multiple) ?? !1,
               clickable: !0,
-              "show-icon": ((q = e.columnState.config.view) == null ? void 0 : q.showIcon) ?? !0,
-              "show-metadata": ((H = e.columnState.config.view) == null ? void 0 : H.showMetadata) ?? !0,
-              onClick: (F, D) => O(F),
-              onSelect: (F, D) => T(F, D),
-              onContextmenu: (F, D) => u(F, D)
+              "show-icon": ((S = e.columnState.config.view) == null ? void 0 : S.showIcon) ?? !0,
+              "show-metadata": ((a = e.columnState.config.view) == null ? void 0 : a.showMetadata) ?? !0,
+              onClick: (f, b) => N(f),
+              onSelect: (f, b) => q(f, b),
+              onContextmenu: (f, b) => y(f, b)
             }, null, 8, ["item", "selected", "selectable", "show-icon", "show-metadata", "onClick", "onSelect", "onContextmenu"]);
           }), 128)),
-          e.columnState.isLoading && e.columnState.items.length > 0 ? (s(), i("div", He, " Loading more... ")) : g("", !0)
-        ])) : g("", !0)
+          e.columnState.isLoading && e.columnState.items.length > 0 ? (i(), r("div", Ze, " Loading more... ")) : C("", !0)
+        ])) : C("", !0)
       ], 544),
-      f.value ? (s(), i("div", Ue, [
-        v("div", je, y(e.columnState.selectedIds.size) + " selected ", 1),
-        v("div", Ge, [
-          (s(!0), i(I, null, w(S.value, (c) => (s(), i("button", {
-            key: c.key,
-            class: B(["action-btn", `action-btn--${c.color || "default"}`]),
-            onClick: (C) => p(c.key)
+      x.value ? (i(), r("div", Ke, [
+        g("div", et, I(e.columnState.selectedIds.size) + " selected ", 1),
+        g("div", tt, [
+          (i(!0), r(E, null, L(_.value, (t) => (i(), r("button", {
+            key: t.key,
+            class: V(["action-btn", `action-btn--${t.color || "default"}`]),
+            onClick: (c) => U(t.key)
           }, [
-            c.icon ? (s(), $(V(Q(c.icon)), {
+            t.icon ? (i(), R(G(s(t.icon)), {
               key: 0,
               size: 14
-            })) : g("", !0),
-            K(" " + y(c.label), 1)
-          ], 10, We))), 128))
+            })) : C("", !0),
+            re(" " + I(t.label), 1)
+          ], 10, nt))), 128))
         ])
-      ])) : g("", !0)
+      ])) : C("", !0)
     ], 2));
   }
-}), Ye = /* @__PURE__ */ L(Xe, [["__scopeId", "data-v-b8fd4b62"]]), Je = ["onClick"], Qe = /* @__PURE__ */ N({
+}), ot = /* @__PURE__ */ j(lt, [["__scopeId", "data-v-4cc9db4b"]]), st = ["onClick"], ct = /* @__PURE__ */ W({
   __name: "ExplorerContextMenu",
   props: {
     visible: { type: Boolean },
@@ -480,51 +543,65 @@ const fe = se("explorer", {
     actions: {}
   },
   emits: ["close", "action"],
-  setup(e, { emit: o }) {
-    const t = e, n = o, l = () => {
-      n("close");
-    }, a = (x) => {
-      n("action", x.key), n("close");
-    }, r = (x) => ({
-      "lucide:download": Y,
-      "lucide:trash": J,
-      "lucide:edit": X,
-      "lucide:eye": he
-    })[x] || null, f = () => {
-      t.visible && n("close");
+  setup(e, { emit: m }) {
+    const o = e, d = m, u = () => {
+      d("close");
+    }, h = (x) => {
+      d("action", x.key), d("close");
+    }, k = (x) => ({
+      "lucide:download": le,
+      "lucide:trash": oe,
+      "lucide:edit": ne,
+      "lucide:eye": be
+    })[x] || null, p = () => {
+      o.visible && d("close");
     };
-    return ee(() => {
-      document.addEventListener("click", f);
-    }), te(() => {
-      document.removeEventListener("click", f);
-    }), (x, _) => (s(), $(ne, { to: "body" }, [
-      e.visible ? (s(), i("div", {
+    return ue(() => {
+      document.addEventListener("click", p);
+    }), de(() => {
+      document.removeEventListener("click", p);
+    }), (x, O) => (i(), R(me, { to: "body" }, [
+      e.visible ? (i(), r("div", {
         key: 0,
         class: "context-menu",
-        style: le({ top: `${e.y}px`, left: `${e.x}px` }),
-        onClick: l
+        style: te({ top: `${e.y}px`, left: `${e.x}px` }),
+        onClick: u
       }, [
-        (s(!0), i(I, null, w(e.actions, (h) => (s(), i("div", {
-          key: h.key,
+        (i(!0), r(E, null, L(e.actions, ($) => (i(), r("div", {
+          key: $.key,
           class: "context-menu__item",
-          onClick: (S) => a(h)
+          onClick: (v) => h($)
         }, [
-          h.icon ? (s(), $(V(r(h.icon)), {
+          $.icon ? (i(), R(G(k($.icon)), {
             key: 0,
             size: 16
-          })) : g("", !0),
-          v("span", null, y(h.label), 1)
-        ], 8, Je))), 128))
-      ], 4)) : g("", !0)
+          })) : C("", !0),
+          g("span", null, I($.label), 1)
+        ], 8, st))), 128))
+      ], 4)) : C("", !0)
     ]));
   }
-}), Ze = /* @__PURE__ */ L(Qe, [["__scopeId", "data-v-569d2f59"]]), Ke = { class: "explorer-container" }, et = { class: "explorer-viewport" }, tt = /* @__PURE__ */ N({
+}), it = /* @__PURE__ */ j(ct, [["__scopeId", "data-v-569d2f59"]]), at = { class: "explorer-container" }, rt = { class: "explorer-viewport" }, ut = /* @__PURE__ */ W({
   __name: "ExplorerContainer",
   props: {
-    rootColumn: {}
+    rootColumn: {},
+    context: {}
   },
-  setup(e, { expose: o }) {
-    const t = e, n = fe(), l = oe({
+  setup(e, { expose: m }) {
+    const o = e, d = ke(o.context), {
+      breadcrumb: u,
+      visibleColumns: h,
+      activeColumnIndex: k,
+      openColumn: p,
+      selectItem: x,
+      navigateToItem: O,
+      navigateToBreadcrumb: $,
+      refreshColumn: v,
+      loadNextPage: _,
+      executeAction: B,
+      setFilter: N,
+      setSort: q
+    } = d, y = ee({
       visible: !1,
       x: 0,
       y: 0,
@@ -532,77 +609,106 @@ const fe = se("explorer", {
       targetItem: null,
       targetColumnIndex: -1
     });
-    t.rootColumn && n.openColumn(t.rootColumn, 0);
-    const a = async (u, b) => {
-      n.selectItem(b, u.id, !1);
-      const k = n.columns.get(b);
-      k != null && k.config.itemClick && await n.navigateToItem(u, b);
-    }, r = (u, b, k) => {
-      n.selectItem(b, u.id, k);
-    }, f = (u, b, k) => {
-      const p = n.columns.get(b);
-      !(p != null && p.config.actions) || p.config.actions.length === 0 || (p.selectedIds.has(u.id) || n.selectItem(b, u.id, !1), l.visible = !0, l.x = k.clientX, l.y = k.clientY, l.actions = p.config.actions, l.targetItem = u, l.targetColumnIndex = b);
-    }, x = () => {
-      l.visible = !1;
-    }, _ = async (u) => {
-      l.targetColumnIndex >= 0 && await n.executeAction(l.targetColumnIndex, u);
-    }, h = (u) => {
-      n.navigateToBreadcrumb(u);
-    }, S = async (u) => {
-      await n.refreshColumn(u);
-    }, E = async (u) => {
-      await n.loadNextPage(u);
-    }, O = async (u, b) => {
-      await n.executeAction(b, u);
-    }, T = (u, b, k) => {
-      n.setFilter(k, u, b);
+    o.rootColumn && p(o.rootColumn, 0);
+    const z = async (a, f) => {
+      x(f, a.id, !1);
+      const b = d.columns.get(f);
+      b != null && b.config.itemClick && await O(a, f);
+    }, T = (a, f, b) => {
+      x(f, a.id, b);
+    }, U = (a, f, b) => {
+      const w = d.columns.get(f);
+      if (!(w != null && w.config.actions) || w.config.actions.length === 0) return;
+      w.selectedIds.has(a.id) || x(f, a.id, !1);
+      const J = w.selectedIds.size, Q = w.config.actions.filter((A) => {
+        if (J === 1) {
+          if (A.showOnSingleSelect !== void 0 && !A.showOnSingleSelect || A.showOnMultipleSelect === !0 && A.showOnSingleSelect !== void 0 && !A.showOnSingleSelect) return !1;
+        } else if (J > 1 && (A.showOnMultipleSelect !== void 0 && !A.showOnMultipleSelect || A.showOnSingleSelect === !0 && A.showOnMultipleSelect !== void 0 && !A.showOnMultipleSelect))
+          return !1;
+        const se = w.items.filter((ce) => w.selectedIds.has(ce.id));
+        return !(A.visible && !A.visible(se));
+      });
+      Q.length !== 0 && (y.visible = !0, y.x = b.clientX, y.y = b.clientY, y.actions = Q, y.targetItem = a, y.targetColumnIndex = f);
+    }, F = () => {
+      y.visible = !1;
+    }, H = async (a) => {
+      y.targetColumnIndex >= 0 && await B(y.targetColumnIndex, a);
+    }, s = (a) => {
+      $(a);
+    }, l = async (a) => {
+      await v(a);
+    }, n = async (a) => {
+      await _(a);
+    }, t = async (a, f) => {
+      await B(f, a);
+    }, c = (a, f, b) => {
+      N(b, a, f);
+    }, S = (a, f) => {
+      q(f, a);
     };
-    return o({
-      store: n,
-      openColumn: (u) => n.openColumn(u),
-      refresh: () => n.refreshColumn(n.activeColumnIndex)
-    }), (u, b) => (s(), i("div", Ke, [
-      M(n).breadcrumb.length > 0 ? (s(), $(xe, {
+    return m({
+      store: d,
+      openColumn: (a) => p(a),
+      refresh: () => v(k.value)
+    }), (a, f) => (i(), r("div", at, [
+      D(u).length > 0 ? (i(), R(Se, {
         key: 0,
-        breadcrumb: M(n).breadcrumb,
-        onNavigate: h
-      }, null, 8, ["breadcrumb"])) : g("", !0),
-      v("div", et, [
-        (s(!0), i(I, null, w(M(n).visibleColumns, (k, p) => (s(), $(Ye, {
-          key: p,
-          "column-state": k,
-          index: p,
-          "is-active": p === M(n).activeColumnIndex,
-          onItemClick: a,
-          onItemSelect: r,
-          onContextMenu: f,
-          onRefresh: S,
-          onLoadMore: E,
-          onAction: O,
-          onFilterChange: T
+        breadcrumb: D(u),
+        onNavigate: s
+      }, null, 8, ["breadcrumb"])) : C("", !0),
+      g("div", rt, [
+        (i(!0), r(E, null, L(D(h), (b, w) => (i(), R(ot, {
+          key: w,
+          "column-state": b,
+          index: w,
+          "is-active": w === D(k),
+          onItemClick: z,
+          onItemSelect: T,
+          onContextMenu: U,
+          onRefresh: l,
+          onLoadMore: n,
+          onAction: t,
+          onFilterChange: c,
+          onSortChange: S
         }, null, 8, ["column-state", "index", "is-active"]))), 128))
       ]),
-      z(Ze, {
-        visible: l.visible,
-        x: l.x,
-        y: l.y,
-        actions: l.actions,
-        onClose: x,
-        onAction: _
+      Y(it, {
+        visible: y.visible,
+        x: y.x,
+        y: y.y,
+        actions: y.actions,
+        onClose: F,
+        onAction: H
       }, null, 8, ["visible", "x", "y", "actions"])
     ]));
   }
-}), nt = /* @__PURE__ */ L(tt, [["__scopeId", "data-v-4e9a0e53"]]);
-function ct(e) {
-  var o, t, n;
+}), dt = /* @__PURE__ */ j(ut, [["__scopeId", "data-v-e73b7d3f"]]);
+function ft(e) {
+  var m, o, d;
   return {
     id: e.id,
     name: e.name,
     dataProvider: {
-      fetch: async (l) => {
-        const a = await e.fetchData(l);
-        return {
-          items: Array.isArray(a) ? a : [],
+      fetch: async (u) => {
+        if (console.log(`[ColumnBuilder-${e.id}] fetch called with params:`, u), console.log(`[ColumnBuilder-${e.id}] config.data:`, e.data), console.log(`[ColumnBuilder-${e.id}] config.fetchData:`, typeof e.fetchData), e.data)
+          return console.log(`[ColumnBuilder-${e.id}] Using static data`), {
+            items: Array.isArray(e.data) ? e.data : [],
+            hasMore: !1
+          };
+        if (e.fetchData) {
+          console.log(`[ColumnBuilder-${e.id}] Calling fetchData...`);
+          try {
+            const h = await e.fetchData(u);
+            return console.log(`[ColumnBuilder-${e.id}] fetchData returned:`, h), {
+              items: Array.isArray(h) ? h : [],
+              hasMore: !1
+            };
+          } catch (h) {
+            throw console.error(`[ColumnBuilder-${e.id}] Error in fetchData:`, h), h;
+          }
+        }
+        return console.warn(`[ColumnBuilder-${e.id}] No data source provided!`), {
+          items: [],
           hasMore: !1
         };
       }
@@ -611,39 +717,42 @@ function ct(e) {
       enabled: e.allowMultipleSelection !== void 0 || !!(e.singleActions && e.singleActions.length > 0) || !!(e.multipleActions && e.multipleActions.length > 0),
       multiple: e.allowMultipleSelection !== void 0 ? e.allowMultipleSelection : !1
     },
-    filters: (o = e.filters) == null ? void 0 : o.map((l) => ({
-      ...l,
+    filters: (m = e.filters) == null ? void 0 : m.map((u) => ({
+      ...u,
       default: void 0
     })),
+    sortOptions: e.sortOptions,
     actions: [
-      ...((t = e.singleActions) == null ? void 0 : t.map((l) => ({
-        key: l.key,
-        label: l.label,
-        icon: l.icon,
-        color: l.color,
+      ...((o = e.singleActions) == null ? void 0 : o.map((u) => ({
+        key: u.key,
+        label: u.label,
+        icon: u.icon,
+        color: u.color,
+        skipRefresh: u.skipRefresh,
         showOnSingleSelect: !0,
         showOnMultipleSelect: !1,
-        handler: async (a, r) => {
-          await l.handler(a);
+        handler: async (h, k) => {
+          await u.handler(h);
         }
       }))) || [],
-      ...((n = e.multipleActions) == null ? void 0 : n.map((l) => ({
-        key: l.key,
-        label: l.label,
-        icon: l.icon,
-        color: l.color,
+      ...((d = e.multipleActions) == null ? void 0 : d.map((u) => ({
+        key: u.key,
+        label: u.label,
+        icon: u.icon,
+        color: u.color,
+        skipRefresh: u.skipRefresh,
         showOnSingleSelect: !1,
         showOnMultipleSelect: !0,
-        handler: async (a, r) => {
-          await l.handler(a);
+        handler: async (h, k) => {
+          await u.handler(h);
         }
       }))) || []
     ],
     itemClick: e.onItemClick ? {
       type: "navigate",
-      handler: async (l, a) => {
-        const r = e.onItemClick(l, a);
-        return r ? { column: r } : {};
+      handler: async (u, h) => {
+        const k = await e.onItemClick(u, h);
+        return k ? { column: k } : {};
       }
     } : void 0,
     view: {
@@ -653,14 +762,14 @@ function ct(e) {
     }
   };
 }
-const it = {
+const vt = {
   install(e) {
-    e.component("ExplorerContainer", nt);
+    e.component("ExplorerContainer", dt);
   }
 };
 export {
-  nt as ExplorerContainer,
-  ct as createColumn,
-  it as default,
-  fe as useExplorerStore
+  dt as ExplorerContainer,
+  ft as createColumn,
+  vt as default,
+  ke as useExplorer
 };

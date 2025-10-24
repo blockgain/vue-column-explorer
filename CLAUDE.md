@@ -26,9 +26,11 @@ Vue 3 için macOS Finder tarzı multi-column file explorer component. Kullanıc�
 - ✅ Multi-column navigation
 - ✅ Breadcrumb navigation
 - ✅ Filtering (search, number, select)
+- ✅ Sorting (custom sort functions)
 - ✅ Single/multiple selection
-- ✅ Actions on selected items
-- ✅ Context menu
+- ✅ Actions on selected items (single/multiple)
+- ✅ Intelligent context menu
+- ✅ Colored badges (status indicators)
 - ✅ TypeScript support
 - ✅ Lucide icons
 - ✅ Basit `createColumn` API
@@ -65,13 +67,14 @@ src/
 
 example/
 ├── columns/              # Kolon tanımlamaları (modüler)
-│   ├── users.ts
+│   ├── users.ts          # Users example with sorting
 │   ├── folders.ts
 │   ├── books.ts
 │   ├── notes.ts
-│   └── bookFiles.ts
+│   ├── bookFiles.ts
+│   └── orders.ts         # Orders example with badges
 ├── mockData.ts          # Örnek veri
-├── App.vue              # Demo app
+├── App.vue              # Demo app with example switcher
 └── main.ts              # Entry point
 ```
 
@@ -197,6 +200,46 @@ Store trims breadcrumb array
 UI updates to show only columns up to index
 ```
 
+### 5. Sıralama Akışı
+
+```
+User opens filter panel and selects sort option
+    ↓
+ExplorerColumn emits 'sort-change'
+    ↓
+ExplorerContainer → store.setSort()
+    ↓
+Store updates column.currentSort
+    ↓
+Store calls loadColumnData(index, 0) // page 0
+    ↓
+dataProvider.fetch() returns items
+    ↓
+Store applies sortFn from sortOptions
+    ↓
+Sorted items displayed in column
+```
+
+### 6. Akıllı Context Menu Akışı
+
+```
+User right-clicks item
+    ↓
+ExplorerContainer.handleContextMenu()
+    ↓
+Check selectedIds.size
+    ↓
+Filter actions based on selection mode:
+  - Single selection: show only showOnSingleSelect actions
+  - Multiple selection: show only showOnMultipleSelect actions
+    ↓
+Context menu opens with filtered actions
+    ↓
+User clicks action
+    ↓
+executeAction() called with selected IDs
+```
+
 ---
 
 ## Type System
@@ -213,6 +256,8 @@ interface ExplorerItem {
   metadata?: Record<string, any>  // Opsiyonel: Ek bilgiler (size, date, vb.)
   count?: number                  // Opsiyonel: Sağda gösterilecek sayı
   hasChildren?: boolean           // Opsiyonel: Chevron ikonu göster
+  badge?: string                  // Opsiyonel: Badge text (status, durum vb.)
+  badgeColor?: string             // Opsiyonel: Badge rengi ('success', 'error', 'warning', 'info' veya CSS rengi)
   [key: string]: any              // Ek özel alanlar
 }
 ```
@@ -248,6 +293,25 @@ interface ExplorerItem {
   icon: 'lucide:file',
   metadata: { size: '2.4 MB', pages: 176 }
 }
+
+// Sipariş (Badge ile)
+{
+  id: 'order-1',
+  name: 'ORD-001',
+  type: 'order',
+  icon: 'lucide:clipboard',
+  description: 'Ahmet Yılmaz - 1,250.00 TL',
+  badge: 'Tamamlandı',
+  badgeColor: 'success',  // Yeşil badge
+  metadata: { customer: 'Ahmet Yılmaz', amount: 1250, status: 'completed' }
+}
+
+// Badge renk seçenekleri:
+// - 'success'  → Yeşil (tamamlandı, başarılı)
+// - 'error'    → Kırmızı (hata, başarısız)
+// - 'warning'  → Sarı (bekliyor, uyarı)
+// - 'info'     → Mavi (işleniyor, bilgi)
+// - Veya direkt CSS rengi: '#FF5733', 'rgb(255, 87, 51)'
 ```
 
 #### 2. ColumnObject (Düşük Seviye - createColumn kullanın)
@@ -262,6 +326,7 @@ interface ColumnObject {
   itemClick?: ItemClickHandler  // Tıklama davranışı
   view?: ViewConfig            // Görünüm ayarları
   filters?: FilterOption[]     // Filtreler
+  sortOptions?: SortOption[]   // Sıralama seçenekleri
 }
 ```
 
@@ -281,11 +346,25 @@ interface SimpleColumnConfig {
     type: 'search' | 'number' | 'select'
     options?: any[]
   }>
-  actions?: Array<{
+  sortOptions?: Array<{
+    key: string
+    label: string
+    sortFn: (a: ExplorerItem, b: ExplorerItem) => number
+  }>
+  singleActions?: Array<{      // Tek seçimde gösterilecek aksiyonlar
     key: string
     label: string
     icon?: string
     color?: string
+    skipRefresh?: boolean
+    handler: (selectedIds: string[]) => void | Promise<void>
+  }>
+  multipleActions?: Array<{    // Çoklu seçimde gösterilecek aksiyonlar
+    key: string
+    label: string
+    icon?: string
+    color?: string
+    skipRefresh?: boolean
     handler: (selectedIds: string[]) => void | Promise<void>
   }>
 }
@@ -623,6 +702,14 @@ Users > Ahmet Yılmaz > Books > JavaScript
 // loadColumnData(index, 0) çağır (ilk sayfa)
 ```
 
+##### setSort(columnIndex: number, sortKey: string)
+```typescript
+// Kolon sıralamasını ayarla
+// sortKey boşsa sıralamayı kaldır
+// loadColumnData(index, 0) çağır (ilk sayfa)
+// loadColumnData içinde sortFn uygulanır
+```
+
 ---
 
 ## Helper Functions
@@ -645,7 +732,9 @@ SimpleColumnConfig {
   onItemClick?: (item, context) => ColumnObject | null
   allowMultipleSelection?: boolean
   filters?: [...]
-  actions?: [...]
+  sortOptions?: [...]
+  singleActions?: [...]
+  multipleActions?: [...]
 }
 
       ↓ createColumn() dönüşümü ↓
@@ -659,11 +748,15 @@ ColumnObject {
     }
   }
   selection: {
-    enabled: allowMultipleSelection || actions.length > 0
+    enabled: allowMultipleSelection || singleActions.length > 0 || multipleActions.length > 0
     multiple: allowMultipleSelection
   }
   filters: [...] // Mapped with default: undefined
-  actions: [...] // Wrapped with store context
+  sortOptions: [...] // Direct pass-through
+  actions: [
+    ...singleActions.map(a => ({ ...a, showOnSingleSelect: true, showOnMultipleSelect: false })),
+    ...multipleActions.map(a => ({ ...a, showOnSingleSelect: false, showOnMultipleSelect: true }))
+  ]
   itemClick: onItemClick ? {
     type: 'navigate',
     handler: async (item, context) => {
@@ -688,10 +781,12 @@ ColumnObject {
 
 2. **Selection Auto-Enable:**
    - allowMultipleSelection tanımlıysa enabled = true
-   - actions varsa enabled = true
+   - singleActions veya multipleActions varsa enabled = true
    - multiple sadece allowMultipleSelection ile kontrol edilir
 
 3. **Actions Wrapping:**
+   - singleActions → showOnSingleSelect: true, showOnMultipleSelect: false
+   - multipleActions → showOnSingleSelect: false, showOnMultipleSelect: true
    - User handler: `(selectedIds) => void`
    - Wrapped handler: `(selectedIds, context) => Promise<void>`
    - Context parametresi eklenir ama handler'a geçilmez (backward compatibility)
@@ -699,6 +794,10 @@ ColumnObject {
 4. **ItemClick Wrapping:**
    - null dönerse navigasyon olmaz
    - ColumnObject dönerse { column: ... } wrap edilir
+
+5. **Sort Options:**
+   - Direct pass-through, wrapping yok
+   - sortFn store içinde loadColumnData'da uygulanır
 
 ---
 
@@ -708,15 +807,30 @@ ColumnObject {
 ```
 example/
 ├── columns/
-│   ├── users.ts        # Root kolon
+│   ├── users.ts        # Root kolon (sorting örneği)
 │   ├── folders.ts      # User → Folders
 │   ├── books.ts        # Folders → Books
 │   ├── notes.ts        # Folders → Notes
-│   └── bookFiles.ts    # Books → PDF files
+│   ├── bookFiles.ts    # Books → PDF files
+│   └── orders.ts       # Orders (badge örneği)
 ├── mockData.ts
-├── App.vue
+├── App.vue             # Example switcher ile
 └── main.ts
 ```
+
+### Örnekler
+
+**1. Users Example** - Sorting ve Single Selection
+- Ada göre sıralama (A-Z, Z-A)
+- Yaşa göre sıralama (Küçükten Büyüğe, Büyükten Küçüğe)
+- Tek seçim
+- Show User Detail aksiyonu
+
+**2. Orders Example** - Badges ve Multiple Selection
+- Renkli status badge'leri (Success, Error, Warning, Info)
+- Status filter (dropdown)
+- Çoklu seçim
+- Export ve Delete aksiyonları
 
 ### Veri Akış Örneği
 

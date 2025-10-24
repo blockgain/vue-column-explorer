@@ -171,6 +171,82 @@ export const userNotes: Record<string, ExplorerItem[]> = {
   ]
 }
 
+export interface Order {
+  id: string
+  orderNumber: string
+  customer: string
+  amount: number
+  status: 'pending' | 'processing' | 'completed' | 'failed'
+  date: string
+}
+
+export const orders: Order[] = [
+  {
+    id: 'order-1',
+    orderNumber: 'ORD-001',
+    customer: 'Ahmet Yılmaz',
+    amount: 1250.00,
+    status: 'completed',
+    date: '2025-10-20'
+  },
+  {
+    id: 'order-2',
+    orderNumber: 'ORD-002',
+    customer: 'Ayşe Kaya',
+    amount: 890.50,
+    status: 'processing',
+    date: '2025-10-21'
+  },
+  {
+    id: 'order-3',
+    orderNumber: 'ORD-003',
+    customer: 'Mehmet Demir',
+    amount: 2100.00,
+    status: 'failed',
+    date: '2025-10-22'
+  },
+  {
+    id: 'order-4',
+    orderNumber: 'ORD-004',
+    customer: 'Fatma Şahin',
+    amount: 450.75,
+    status: 'pending',
+    date: '2025-10-23'
+  },
+  {
+    id: 'order-5',
+    orderNumber: 'ORD-005',
+    customer: 'Ali Öztürk',
+    amount: 3200.00,
+    status: 'completed',
+    date: '2025-10-23'
+  },
+  {
+    id: 'order-6',
+    orderNumber: 'ORD-006',
+    customer: 'Zeynep Aydın',
+    amount: 1650.00,
+    status: 'processing',
+    date: '2025-10-24'
+  },
+  {
+    id: 'order-7',
+    orderNumber: 'ORD-007',
+    customer: 'Can Yıldız',
+    amount: 780.25,
+    status: 'completed',
+    date: '2025-10-24'
+  },
+  {
+    id: 'order-8',
+    orderNumber: 'ORD-008',
+    customer: 'Elif Çelik',
+    amount: 5400.00,
+    status: 'failed',
+    date: '2025-10-24'
+  }
+]
+
 export const bookFiles: Record<string, ExplorerItem[]> = {
   'book-1-1': [
     {

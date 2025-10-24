@@ -4,7 +4,7 @@
       <h3 class="explorer-column__title">{{ columnState.config.name }}</h3>
       <div class="explorer-column__actions">
         <button
-          v-if="hasFilters"
+          v-if="hasFilters || hasSortOptions"
           class="explorer-column__filter-btn"
           @click="toggleFilters"
           :class="{ 'active': showFilters }"
@@ -17,7 +17,25 @@
       </div>
     </div>
 
-    <div v-if="showFilters && hasFilters" class="explorer-column__filters">
+    <div v-if="showFilters && (hasFilters || hasSortOptions)" class="explorer-column__filters">
+      <div v-if="hasSortOptions" class="filter-item">
+        <label class="filter-item__label">Sıralama</label>
+        <select
+          class="filter-item__select"
+          :value="columnState.currentSort || ''"
+          @change="handleSortChange(($event.target as HTMLSelectElement).value)"
+        >
+          <option value="">Varsayılan</option>
+          <option
+            v-for="sortOption in columnState.config.sortOptions"
+            :key="sortOption.key"
+            :value="sortOption.key"
+          >
+            {{ sortOption.label }}
+          </option>
+        </select>
+      </div>
+
       <div
         v-for="filter in columnState.config.filters"
         :key="filter.key"
@@ -76,6 +94,7 @@
 
       <div v-else-if="columnState.error" class="explorer-column__error">
         <p>Error loading data</p>
+        <p class="error-message" v-if="columnState.error.message">{{ columnState.error.message }}</p>
         <button @click="handleRefresh">Retry</button>
       </div>
 
@@ -147,6 +166,7 @@ interface Emits {
   (e: 'load-more', columnIndex: number): void
   (e: 'action', actionKey: string, columnIndex: number): void
   (e: 'filter-change', filterKey: string, value: any, columnIndex: number): void
+  (e: 'sort-change', sortKey: string, columnIndex: number): void
 }
 
 const props = defineProps<Props>()
@@ -157,6 +177,10 @@ const showFilters = ref(false)
 
 const hasFilters = computed(() => {
   return props.columnState.config.filters && props.columnState.config.filters.length > 0
+})
+
+const hasSortOptions = computed(() => {
+  return props.columnState.config.sortOptions && props.columnState.config.sortOptions.length > 0
 })
 
 const hasSelection = computed(() => {
@@ -234,6 +258,10 @@ const handleAction = (actionKey: string) => {
 
 const handleFilterChange = (filterKey: string, value: any) => {
   emit('filter-change', filterKey, value, props.index)
+}
+
+const handleSortChange = (sortKey: string) => {
+  emit('sort-change', sortKey, props.index)
 }
 
 const getIcon = (iconName: string) => {

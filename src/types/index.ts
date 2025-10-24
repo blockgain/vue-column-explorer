@@ -4,6 +4,10 @@ export interface ExplorerItem {
   type: string
   icon?: string
   metadata?: Record<string, any>
+  disabled?: boolean
+  status?: string
+  badge?: string  // Badge text to display
+  badgeColor?: string  // Badge color: 'success', 'error', 'warning', 'info', or any CSS color
   [key: string]: any
 }
 
@@ -40,6 +44,7 @@ export interface ActionHandler {
   requireConfirm?: boolean
   showOnSingleSelect?: boolean  // Show this action when exactly 1 item is selected
   showOnMultipleSelect?: boolean  // Show this action when multiple items are selected
+  skipRefresh?: boolean  // Skip column refresh after action execution
 }
 
 export type ItemClickType = 'navigate' | 'action' | 'custom'
@@ -70,6 +75,12 @@ export interface FilterOption {
   operator?: 'eq' | 'gt' | 'lt' | 'gte' | 'lte' | 'contains'
 }
 
+export interface SortOption {
+  key: string
+  label: string
+  sortFn: (a: ExplorerItem, b: ExplorerItem) => number
+}
+
 export interface ColumnObject {
   id: string
   name: string
@@ -80,6 +91,7 @@ export interface ColumnObject {
   itemClick?: ItemClickHandler
   view?: ViewConfig
   filters?: FilterOption[]
+  sortOptions?: SortOption[]
 }
 
 export interface FilterObject {
@@ -105,6 +117,7 @@ export interface ContextData {
   breadcrumb: BreadcrumbItem[]
   globalFilters: FilterObject
   columnChain: ColumnChainItem[]
+  external?: Record<string, any>  // External context from parent app
 
   getParentData(depth: number): ColumnChainItem | undefined
   getColumnData(columnId: string): ColumnChainItem | undefined
@@ -119,6 +132,7 @@ export interface ColumnState {
   isLoading: boolean
   error: Error | null
   filters: FilterObject
+  currentSort?: string  // Current sort option key
 }
 
 export interface ExplorerConfig {

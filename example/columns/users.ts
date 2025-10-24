@@ -7,7 +7,11 @@ export const usersColumn = createColumn({
   id: 'users',
   name: 'Users',
 
-  fetchData: ({ filters }) => {
+  fetchData: ({ filters, context }) => {
+    // Example: Access external context passed from parent app
+    console.log('External context:', context.external)
+    // You can use context.external.apiBaseUrl, context.external.userId, etc.
+
     let filteredUsers = [...users]
 
     // Search filter
@@ -43,6 +47,29 @@ export const usersColumn = createColumn({
   },
 
   allowMultipleSelection: false, // Users don't support multiple selection
+
+  sortOptions: [
+    {
+      key: 'name-asc',
+      label: 'Ada Göre (A-Z)',
+      sortFn: (a, b) => a.name.localeCompare(b.name, 'tr')
+    },
+    {
+      key: 'name-desc',
+      label: 'Ada Göre (Z-A)',
+      sortFn: (a, b) => b.name.localeCompare(a.name, 'tr')
+    },
+    {
+      key: 'age-asc',
+      label: 'Yaşa Göre (Küçükten Büyüğe)',
+      sortFn: (a, b) => (a.metadata?.age || 0) - (b.metadata?.age || 0)
+    },
+    {
+      key: 'age-desc',
+      label: 'Yaşa Göre (Büyükten Küçüğe)',
+      sortFn: (a, b) => (b.metadata?.age || 0) - (a.metadata?.age || 0)
+    }
+  ],
 
   singleActions: [
     {

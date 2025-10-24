@@ -18,12 +18,13 @@ Open http://localhost:5173/ in your browser.
 
 ## Example Walkthrough
 
-### Users → [Books|Notes] → Content Structure
+### Multiple Examples
 
-The example demonstrates a hierarchical file explorer:
+The example app includes two demonstrations:
 
+**1. Users Example** - Hierarchical file explorer with sorting:
 ```
-Users (3 users)
+Users (3 users) [Sortable by Name & Age]
 ├── Ahmet Yılmaz (age: 28)
 │   ├── Books/
 │   │   ├── JavaScript: The Good Parts/
@@ -41,12 +42,28 @@ Users (3 users)
     └── ...
 ```
 
+**2. Orders Example** - Status tracking with colored badges:
+```
+Orders (8 orders)
+├── ORD-001 [Tamamlandı ✓]     # Green badge
+├── ORD-002 [İşleniyor ⟳]      # Blue badge
+├── ORD-003 [Başarısız ✗]      # Red badge
+├── ORD-004 [Bekliyor ⏸]       # Yellow badge
+└── ...
+```
+
 ### Features to Test
 
-#### 1. Search & Filters
+#### 1. Example Switcher
+
+1. Click "Users Example" or "Orders (Badge Example)" buttons in header
+2. Examples switch instantly
+3. Each example demonstrates different features
+
+#### 2. Search & Filters
 
 **Search Users:**
-1. Click the filter button (funnel icon) in Users column
+1. In Users Example, click the filter button (funnel icon)
 2. Type a name in "Search Users" input
 3. Users list filters in real-time
 
@@ -55,7 +72,23 @@ Users (3 users)
 2. Enter "18" in the "Age >" field
 3. Only users older than 18 appear (filters out Mehmet Demir)
 
-#### 2. Navigation
+**Status Filter (Orders):**
+1. In Orders Example, click the filter button
+2. Select a status from "Durum" dropdown
+3. Only orders with that status appear
+
+#### 3. Sorting
+
+**Sort Users:**
+1. In Users Example, click the filter button
+2. Select from "Sıralama" dropdown:
+   - Ada Göre (A-Z)
+   - Ada Göre (Z-A)
+   - Yaşa Göre (Küçükten Büyüğe)
+   - Yaşa Göre (Büyükten Küçüğe)
+3. Users list re-sorts immediately
+
+#### 4. Navigation
 
 **Basic Navigation:**
 1. Click on "Ahmet Yılmaz"
@@ -70,7 +103,17 @@ Users (3 users)
 2. Click on any breadcrumb item to go back
 3. All columns after that point close
 
-#### 3. Selection & Actions
+#### 5. Badges (Visual Status Indicators)
+
+**View Colored Badges:**
+1. Switch to Orders Example
+2. See colored badges next to each order:
+   - Green: "Tamamlandı" (Completed)
+   - Blue: "İşleniyor" (Processing)
+   - Yellow: "Bekliyor" (Pending)
+   - Red: "Başarısız" (Failed)
+
+#### 6. Selection & Actions
 
 **Single Selection:**
 1. Click on any user
@@ -85,26 +128,59 @@ Users (3 users)
 
 **Actions:**
 1. Select one or more items
-2. Click "Download" or "Delete" button in footer
+2. Click action button in footer
 3. Alert shows what would happen
 
-#### 4. Context Menu
+**Single vs Multiple Actions:**
+- Users Example: Single selection only → "Show User Detail" action
+- Orders Example: Multiple selection → "Dışa Aktar" (Export) or "Sil" (Delete)
 
-**Right-Click Download:**
-1. Navigate to a book.pdf file
-2. Right-click on the file
-3. Context menu appears
-4. Click "Download"
-5. Alert shows download action
+#### 7. Intelligent Context Menu
 
-#### 5. Refresh
+**Single Selection Context Menu:**
+1. In Orders Example, right-click on one order
+2. Context menu shows: "Detayları Gör" (View Details)
+3. Only single-selection actions appear
+
+**Multiple Selection Context Menu:**
+1. In Orders Example, select multiple orders (use checkboxes)
+2. Right-click on any selected order
+3. Context menu shows: "Dışa Aktar", "Sil"
+4. Only multiple-selection actions appear
+5. Single-selection actions are hidden automatically
+
+#### 8. Refresh
 
 1. Click refresh button (circular arrow) in any column header
 2. Column reloads with fresh data
 
 ## Creating Your Own Columns
 
-### Basic Column
+### Simple Column with createColumn (Recommended)
+
+```typescript
+import { createColumn } from 'vue-column-explorer'
+
+const myColumn = createColumn({
+  id: 'unique-id',
+  name: 'Column Title',
+
+  // Fetch data
+  fetchData: async ({ filters, context }) => {
+    const items = await fetchMyData(filters)
+
+    return items.map(item => ({
+      id: item.id,
+      name: item.title,
+      type: item.type,
+      icon: 'lucide:file',
+      metadata: { /* any extra data */ }
+    }))
+  }
+})
+```
+
+### Advanced: Using ColumnObject Directly
 
 ```typescript
 import type { ColumnObject } from '../src/types'
@@ -148,7 +224,7 @@ const myColumn: ColumnObject = {
 ### Column with Filters
 
 ```typescript
-const columnWithFilters: ColumnObject = {
+const columnWithFilters = createColumn({
   id: 'filtered-column',
   name: 'My Column',
 
@@ -161,53 +237,173 @@ const columnWithFilters: ColumnObject = {
     {
       key: 'age',
       label: 'Age >',
-      type: 'number',
-      operator: 'gt'
+      type: 'number'
     },
     {
       key: 'status',
       label: 'Status',
       type: 'select',
       options: [
+        { value: 'all', label: 'All' },
         { value: 'active', label: 'Active' },
         { value: 'inactive', label: 'Inactive' }
       ]
     }
   ],
 
-  dataProvider: {
-    fetch: async ({ filters }) => {
-      // Use filters.search, filters.age, filters.status
-      // in your query
-      return { items: [], hasMore: false }
+  fetchData: async ({ filters }) => {
+    let items = await getAllItems()
+
+    // Apply filters
+    if (filters.search) {
+      items = items.filter(i => i.name.includes(filters.search))
     }
+    if (filters.age) {
+      items = items.filter(i => i.metadata.age > filters.age)
+    }
+    if (filters.status && filters.status !== 'all') {
+      items = items.filter(i => i.status === filters.status)
+    }
+
+    return items
   }
+})
+```
+
+### Column with Sorting
+
+```typescript
+const sortableColumn = createColumn({
+  id: 'sortable-column',
+  name: 'Users',
+
+  sortOptions: [
+    {
+      key: 'name-asc',
+      label: 'Name (A-Z)',
+      sortFn: (a, b) => a.name.localeCompare(b.name)
+    },
+    {
+      key: 'name-desc',
+      label: 'Name (Z-A)',
+      sortFn: (a, b) => b.name.localeCompare(a.name)
+    },
+    {
+      key: 'date-newest',
+      label: 'Newest First',
+      sortFn: (a, b) => new Date(b.metadata.date) - new Date(a.metadata.date)
+    }
+  ],
+
+  fetchData: async () => {
+    return await getItems()
+    // Sorting is applied automatically by the store
+  }
+})
+```
+
+### Column with Badges
+
+```typescript
+const columnWithBadges = createColumn({
+  id: 'orders',
+  name: 'Orders',
+
+  fetchData: async () => {
+    const orders = await getOrders()
+
+    return orders.map(order => ({
+      id: order.id,
+      name: order.orderNumber,
+      type: 'order',
+      icon: 'lucide:clipboard',
+      description: `${order.customer} - ${order.amount}`,
+      // Add colored badge
+      badge: getBadgeText(order.status),
+      badgeColor: getBadgeColor(order.status), // 'success', 'error', 'warning', 'info'
+      metadata: order
+    }))
+  }
+})
+
+// Helper functions
+function getBadgeText(status: string) {
+  const map = {
+    completed: 'Completed',
+    processing: 'Processing',
+    pending: 'Pending',
+    failed: 'Failed'
+  }
+  return map[status] || status
+}
+
+function getBadgeColor(status: string) {
+  const map = {
+    completed: 'success',   // Green
+    processing: 'info',     // Blue
+    pending: 'warning',     // Yellow
+    failed: 'error'         // Red
+  }
+  return map[status]
 }
 ```
 
-### Column with Actions
+### Column with Single Selection Actions
 
 ```typescript
-const columnWithActions: ColumnObject = {
-  id: 'actionable-column',
-  name: 'Files',
+const columnWithSingleActions = createColumn({
+  id: 'users',
+  name: 'Users',
 
-  selection: {
-    enabled: true,
-    multiple: true
-  },
+  allowMultipleSelection: false, // Single selection only
 
-  actions: [
+  singleActions: [
     {
-      key: 'download',
-      label: 'Download',
+      key: 'view-details',
+      label: 'View Details',
+      icon: 'lucide:eye',
+      color: 'primary',
+      handler: async (selectedIds) => {
+        const userId = selectedIds[0]
+        const user = await getUserDetails(userId)
+        showDetailsModal(user)
+      }
+    },
+    {
+      key: 'edit',
+      label: 'Edit',
+      icon: 'lucide:edit',
+      color: 'primary',
+      handler: async (selectedIds) => {
+        const userId = selectedIds[0]
+        openEditModal(userId)
+      }
+    }
+  ],
+
+  fetchData: async () => await getUsers()
+})
+```
+
+### Column with Multiple Selection Actions
+
+```typescript
+const columnWithMultipleActions = createColumn({
+  id: 'orders',
+  name: 'Orders',
+
+  allowMultipleSelection: true, // Enable multiple selection
+
+  multipleActions: [
+    {
+      key: 'export',
+      label: 'Export',
       icon: 'lucide:download',
       color: 'primary',
-      handler: async (selectedIds, context) => {
-        // Download selected items
-        for (const id of selectedIds) {
-          await downloadFile(id)
-        }
+      handler: async (selectedIds) => {
+        // Export selected orders
+        const orders = selectedIds.map(id => getOrder(id))
+        await exportToCSV(orders)
       }
     },
     {
@@ -215,23 +411,84 @@ const columnWithActions: ColumnObject = {
       label: 'Delete',
       icon: 'lucide:trash',
       color: 'danger',
-      visible: (items) => {
-        // Only show if user has permission
-        return hasDeletePermission()
-      },
       handler: async (selectedIds) => {
-        if (confirm('Delete items?')) {
+        if (confirm(`Delete ${selectedIds.length} items?`)) {
+          await deleteOrders(selectedIds)
+        }
+      }
+    }
+  ],
+
+  fetchData: async () => await getOrders()
+})
+```
+
+### Column with Both Single and Multiple Actions
+
+```typescript
+const columnWithBothActions = createColumn({
+  id: 'files',
+  name: 'Files',
+
+  allowMultipleSelection: true,
+
+  // Actions for single selection
+  singleActions: [
+    {
+      key: 'preview',
+      label: 'Preview',
+      icon: 'lucide:eye',
+      color: 'primary',
+      handler: async (selectedIds) => {
+        const fileId = selectedIds[0]
+        openPreview(fileId)
+      }
+    },
+    {
+      key: 'rename',
+      label: 'Rename',
+      icon: 'lucide:edit',
+      handler: async (selectedIds) => {
+        const fileId = selectedIds[0]
+        const newName = prompt('New name:')
+        if (newName) await renameFile(fileId, newName)
+      }
+    }
+  ],
+
+  // Actions for multiple selection
+  multipleActions: [
+    {
+      key: 'download-all',
+      label: 'Download All',
+      icon: 'lucide:download',
+      color: 'primary',
+      handler: async (selectedIds) => {
+        await downloadFiles(selectedIds)
+      }
+    },
+    {
+      key: 'delete-all',
+      label: 'Delete All',
+      icon: 'lucide:trash',
+      color: 'danger',
+      handler: async (selectedIds) => {
+        if (confirm(`Delete ${selectedIds.length} files?`)) {
           await deleteFiles(selectedIds)
         }
       }
     }
   ],
 
-  dataProvider: {
-    fetch: async () => ({ items: [], hasMore: false })
-  }
-}
+  fetchData: async () => await getFiles()
+})
 ```
+
+**How It Works:**
+- **Context Menu Intelligence**: Right-click menu automatically shows only relevant actions
+  - Single item selected → Only `singleActions` appear
+  - Multiple items selected → Only `multipleActions` appear
+- **Footer Actions**: Same logic applies to action buttons in column footer
 
 ### Navigable Column
 
