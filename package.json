@@ -1,6 +1,6 @@
 {
   "name": "vue-column-explorer",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "A powerful multi-column file explorer component for Vue 3 with sorting, badges, and intelligent context menus",
   "main": "dist/vue-column-explorer.umd.js",
   "module": "dist/vue-column-explorer.es.js",
