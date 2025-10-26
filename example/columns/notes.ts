@@ -1,4 +1,5 @@
 import { createColumn } from '../../src/helpers/columnBuilder'
+import type { ExplorerItem } from '../../src/types'
 import { userNotes } from '../mockData'
 
 export function createNotesColumn(userId: string) {
@@ -17,14 +18,14 @@ export function createNotesColumn(userId: string) {
 
     allowMultipleSelection: true, // Allow selecting multiple notes
 
-    actions: [
+    multipleActions: [
       {
         key: 'send-mail',
         label: 'Mail Gönder',
         icon: 'lucide:mail',
         color: 'primary',
-        handler: async (selectedIds) => {
-          alert(`Mail gönderiliyor:\n${selectedIds.join('\n')}`)
+        handler: async (items: ExplorerItem[]) => {
+          alert(`Mail gönderiliyor:\n${items.map(i => i.name).join('\n')}`)
         }
       },
       {
@@ -32,8 +33,8 @@ export function createNotesColumn(userId: string) {
         label: 'İndir',
         icon: 'lucide:download',
         color: 'primary',
-        handler: async (selectedIds) => {
-          alert(`İndiriliyor:\n${selectedIds.join('\n')}`)
+        handler: async (items: ExplorerItem[]) => {
+          alert(`İndiriliyor:\n${items.map(i => i.name).join('\n')}`)
         }
       }
     ]

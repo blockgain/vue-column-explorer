@@ -8,6 +8,8 @@ export interface ExplorerItem {
   status?: string
   badge?: string  // Badge text to display
   badgeColor?: string  // Badge color: 'success', 'error', 'warning', 'info', or any CSS color
+  show?: boolean  // Show detail panel for this item
+  description?: string  // Description text for detail panel
   [key: string]: any
 }
 
@@ -34,6 +36,31 @@ export interface SelectionConfig {
   persistOnNavigate?: boolean
 }
 
+// Single action handler - for single item selection
+export interface SingleActionHandler {
+  key: string
+  label: string
+  icon?: string
+  color?: string
+  visible?: (item: ExplorerItem) => boolean
+  handler: (item: ExplorerItem, context: ContextData) => Promise<any> | any
+  requireConfirm?: boolean
+  skipRefresh?: boolean
+}
+
+// Multiple action handler - for multiple items selection
+export interface MultipleActionHandler {
+  key: string
+  label: string
+  icon?: string
+  color?: string
+  visible?: (items: ExplorerItem[]) => boolean
+  handler: (items: ExplorerItem[], context: ContextData) => Promise<any> | any
+  requireConfirm?: boolean
+  skipRefresh?: boolean
+}
+
+// Internal action handler (unified for store)
 export interface ActionHandler {
   key: string
   label: string
@@ -78,7 +105,7 @@ export interface FilterOption {
 export interface SortOption {
   key: string
   label: string
-  sortFn: (a: ExplorerItem, b: ExplorerItem) => number
+  sortFn?: (a: ExplorerItem, b: ExplorerItem) => number
 }
 
 export interface ColumnObject {
@@ -92,6 +119,8 @@ export interface ColumnObject {
   view?: ViewConfig
   filters?: FilterOption[]
   sortOptions?: SortOption[]
+  isDetailView?: boolean  // Show this column as a detail view panel
+  detailItem?: ExplorerItem  // Item to display in detail view
 }
 
 export interface FilterObject {
@@ -117,6 +146,7 @@ export interface ContextData {
   breadcrumb: BreadcrumbItem[]
   globalFilters: FilterObject
   columnChain: ColumnChainItem[]
+  selectedItems?: ExplorerItem[]  // Currently selected items from active column
   external?: Record<string, any>  // External context from parent app
 
   getParentData(depth: number): ColumnChainItem | undefined

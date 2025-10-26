@@ -1,4 +1,5 @@
 import { createColumn } from '../../src/helpers/columnBuilder'
+import type { ExplorerItem } from '../../src/types'
 import { orders } from '../mockData'
 
 // Status to badge color mapping
@@ -63,9 +64,8 @@ export const ordersColumn = createColumn({
       label: 'Dışa Aktar',
       icon: 'lucide:download',
       color: 'primary',
-      handler: async (selectedIds) => {
-        const selectedOrders = orders.filter(o => selectedIds.includes(o.id))
-        alert(`${selectedOrders.length} sipariş dışa aktarılıyor:\n${selectedOrders.map(o => o.orderNumber).join(', ')}`)
+      handler: async (items: ExplorerItem[]) => {
+        alert(`${items.length} sipariş dışa aktarılıyor:\n${items.map(i => i.name).join(', ')}`)
       }
     },
     {
@@ -73,9 +73,9 @@ export const ordersColumn = createColumn({
       label: 'Sil',
       icon: 'lucide:trash',
       color: 'danger',
-      handler: async (selectedIds) => {
-        if (confirm(`${selectedIds.length} siparişi silmek istediğinize emin misiniz?`)) {
-          alert(`${selectedIds.length} sipariş silindi`)
+      handler: async (items: ExplorerItem[]) => {
+        if (confirm(`${items.length} siparişi silmek istediğinize emin misiniz?`)) {
+          alert(`${items.length} sipariş silindi`)
         }
       }
     }
@@ -87,8 +87,8 @@ export const ordersColumn = createColumn({
       label: 'Detayları Gör',
       icon: 'lucide:file-text',
       color: 'primary',
-      handler: async (selectedIds) => {
-        const order = orders.find(o => o.id === selectedIds[0])
+      handler: async (item: ExplorerItem) => {
+        const order = orders.find(o => o.id === item.id)
         if (order) {
           alert(`Sipariş Detayları:\n\nSipariş No: ${order.orderNumber}\nMüşteri: ${order.customer}\nTutar: ${order.amount.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}\nDurum: ${statusLabelMap[order.status]}\nTarih: ${order.date}`)
         }

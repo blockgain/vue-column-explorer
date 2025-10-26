@@ -1,4 +1,5 @@
 import { createColumn } from '../../src/helpers/columnBuilder'
+import type { ExplorerItem } from '../../src/types'
 import { bookFiles } from '../mockData'
 
 export function createBookFilesColumn(bookId: string, bookName: string) {
@@ -18,14 +19,14 @@ export function createBookFilesColumn(bookId: string, bookName: string) {
 
     allowMultipleSelection: true,
 
-    actions: [
+    multipleActions: [
       {
         key: 'send-mail',
         label: 'Mail Gönder',
         icon: 'lucide:mail',
         color: 'primary',
-        handler: async (selectedIds) => {
-          alert(`Mail gönderiliyor:\n${selectedIds.join('\n')}`)
+        handler: async (items: ExplorerItem[]) => {
+          alert(`Mail gönderiliyor:\n${items.map(i => i.name).join('\n')}`)
         }
       },
       {
@@ -33,8 +34,8 @@ export function createBookFilesColumn(bookId: string, bookName: string) {
         label: 'İndir',
         icon: 'lucide:download',
         color: 'primary',
-        handler: async (selectedIds) => {
-          alert(`İndiriliyor:\n${selectedIds.join('\n')}`)
+        handler: async (items: ExplorerItem[]) => {
+          alert(`İndiriliyor:\n${items.map(i => i.name).join('\n')}`)
         }
       }
     ]

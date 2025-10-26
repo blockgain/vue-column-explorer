@@ -1,4 +1,5 @@
 import { createColumn } from '../../src/helpers/columnBuilder'
+import type { ExplorerItem } from '../../src/types'
 import { userBooks, bookFiles, simulateApiCall } from '../mockData'
 import { createBookFilesColumn } from './bookFiles'
 
@@ -33,10 +34,9 @@ export function createBooksColumn(userId: string) {
         label: 'Show Writer',
         icon: 'lucide:user',
         color: 'primary',
-        handler: async (selectedIds) => {
-          const bookId = selectedIds[0]
+        handler: async (item: ExplorerItem) => {
           const books = userBooks[userId] || []
-          const book = books.find(b => b.id === bookId)
+          const book = books.find(b => b.id === item.id)
           if (book && book.writer) {
             alert(`Writer: ${book.writer}\nBook: ${book.name}`)
           }
@@ -50,8 +50,8 @@ export function createBooksColumn(userId: string) {
         label: 'Mail Gönder',
         icon: 'lucide:mail',
         color: 'primary',
-        handler: async (selectedIds) => {
-          alert(`Mail gönderiliyor:\n${selectedIds.join('\n')}`)
+        handler: async (items: ExplorerItem[]) => {
+          alert(`Mail gönderiliyor:\n${items.map(i => i.name).join('\n')}`)
         }
       },
       {
@@ -59,8 +59,8 @@ export function createBooksColumn(userId: string) {
         label: 'İndir',
         icon: 'lucide:download',
         color: 'primary',
-        handler: async (selectedIds) => {
-          alert(`İndiriliyor:\n${selectedIds.join('\n')}`)
+        handler: async (items: ExplorerItem[]) => {
+          alert(`İndiriliyor:\n${items.map(i => i.name).join('\n')}`)
         }
       }
     ]

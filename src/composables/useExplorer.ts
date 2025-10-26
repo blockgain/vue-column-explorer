@@ -89,12 +89,19 @@ export function useExplorer(externalContext?: Record<string, any>) {
       ? parentColumn.items.find(item => parentColumn.selectedIds.has(item.id))
       : null
 
+    // Get selected items from active column
+    const activeColumn = columns.get(activeColumnIndex.value)
+    const selectedItems = activeColumn
+      ? activeColumn.items.filter(item => activeColumn.selectedIds.has(item.id))
+      : []
+
     return {
       parentId: parentItem?.id || null,
       parentItem: parentItem || null,
       breadcrumb: breadcrumb.value,
       globalFilters: globalFilters.value,
       columnChain,
+      selectedItems,  // Include selected items from active column
       external: externalContext,  // Include external context
       getParentData(depth: number) {
         const index = activeColumnIndex.value - depth
@@ -169,16 +176,20 @@ export function useExplorer(externalContext?: Record<string, any>) {
       const result = await column.config.dataProvider.fetch({
         parentId: context.parentId,
         page,
-        filters: { ...globalFilters.value, ...column.filters },
+        filters: {
+          ...globalFilters.value,
+          ...column.filters,
+          ...(column.currentSort ? { sort: column.currentSort } : {})
+        },
         context
       })
 
       let items = result.items
 
-      // Apply sorting if a sort option is selected
+      // Apply sorting if a sort option is selected AND it has a sortFn
       if (column.currentSort && column.config.sortOptions) {
         const sortOption = column.config.sortOptions.find(s => s.key === column.currentSort)
-        if (sortOption) {
+        if (sortOption && sortOption.sortFn) {
           items = [...items].sort(sortOption.sortFn)
         }
       }
@@ -210,7 +221,7 @@ export function useExplorer(externalContext?: Record<string, any>) {
     const column = columns.get(index)
     if (!column) return
 
-    column.selectedIds.clear()
+    column.selectedIds = new Set()
     column.page = 0
     await loadColumnData(index, 0)
   }
@@ -220,21 +231,24 @@ export function useExplorer(externalContext?: Record<string, any>) {
     if (!column || !column.config.selection?.enabled) return
 
     if (isMultiple && column.config.selection.multiple) {
-      if (column.selectedIds.has(itemId)) {
-        column.selectedIds.delete(itemId)
+      // Create new Set to trigger reactivity
+      const newSet = new Set(column.selectedIds)
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId)
       } else {
-        column.selectedIds.add(itemId)
+        newSet.add(itemId)
       }
+      column.selectedIds = newSet
     } else {
-      column.selectedIds.clear()
-      column.selectedIds.add(itemId)
+      // Create new Set with single item to trigger reactivity
+      column.selectedIds = new Set([itemId])
     }
   }
 
   function clearSelection(columnIndex: number) {
     const column = columns.get(columnIndex)
     if (!column) return
-    column.selectedIds.clear()
+    column.selectedIds = new Set()
   }
 
   async function navigateToItem(item: ExplorerItem, columnIndex: number) {

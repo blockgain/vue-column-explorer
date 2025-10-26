@@ -24,7 +24,7 @@ export interface SimpleColumnConfig {
     icon?: string
     color?: string
     skipRefresh?: boolean
-    handler: (selectedIds: string[]) => void | Promise<void>
+    handler: (item: ExplorerItem, context?: any) => void | Promise<void>
   }>
   multipleActions?: Array<{
     key: string
@@ -32,7 +32,7 @@ export interface SimpleColumnConfig {
     icon?: string
     color?: string
     skipRefresh?: boolean
-    handler: (selectedIds: string[]) => void | Promise<void>
+    handler: (items: ExplorerItem[], context?: any) => void | Promise<void>
   }>
 }
 
@@ -84,7 +84,8 @@ export function createColumn(config: SimpleColumnConfig): ColumnObject {
     selection: {
       enabled: config.allowMultipleSelection !== undefined ||
                !!(config.singleActions && config.singleActions.length > 0) ||
-               !!(config.multipleActions && config.multipleActions.length > 0),
+               !!(config.multipleActions && config.multipleActions.length > 0) ||
+               !!config.onItemClick,  // Enable selection if item is clickable
       multiple: config.allowMultipleSelection !== undefined ? config.allowMultipleSelection : false
     },
 
@@ -104,8 +105,14 @@ export function createColumn(config: SimpleColumnConfig): ColumnObject {
         skipRefresh: action.skipRefresh,
         showOnSingleSelect: true,
         showOnMultipleSelect: false,
-        handler: async (selectedIds: string[], _context: any) => {
-          await action.handler(selectedIds)
+        handler: async (_selectedIds: string[], context: any) => {
+          // For single actions, pass the single selected item
+          const item = context.selectedItems?.[0]
+          if (!item) {
+            console.warn(`[ColumnBuilder-${config.id}] No item found for single action: ${action.key}`)
+            return
+          }
+          await action.handler(item, context)
         }
       })) || []),
       ...(config.multipleActions?.map(action => ({
@@ -116,8 +123,14 @@ export function createColumn(config: SimpleColumnConfig): ColumnObject {
         skipRefresh: action.skipRefresh,
         showOnSingleSelect: false,
         showOnMultipleSelect: true,
-        handler: async (selectedIds: string[], _context: any) => {
-          await action.handler(selectedIds)
+        handler: async (_selectedIds: string[], context: any) => {
+          // For multiple actions, pass all selected items
+          const items = context.selectedItems || []
+          if (items.length === 0) {
+            console.warn(`[ColumnBuilder-${config.id}] No items found for multiple action: ${action.key}`)
+            return
+          }
+          await action.handler(items, context)
         }
       })) || [])
     ],

@@ -77,9 +77,8 @@ export const usersColumn = createColumn({
       label: 'Show User Detail',
       icon: 'lucide:user',
       color: 'primary',
-      handler: async (selectedIds) => {
-        const userId = selectedIds[0]
-        const user = users.find(u => u.id === userId)
+      handler: async (item: ExplorerItem) => {
+        const user = users.find(u => u.id === item.id)
         if (user) {
           alert(`User Detail:\n\nName: ${user.fullName}\nEmail: ${user.email}\nAge: ${user.age}`)
         }

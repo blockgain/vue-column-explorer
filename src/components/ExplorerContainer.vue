@@ -6,22 +6,27 @@
       @navigate="handleBreadcrumbNavigate"
     />
 
-    <div class="explorer-viewport">
-      <ExplorerColumn
-        v-for="(column, index) in visibleColumns"
-        :key="index"
-        :column-state="column"
-        :index="index"
-        :is-active="index === activeColumnIndex"
-        @item-click="handleItemClick"
-        @item-select="handleItemSelect"
-        @context-menu="handleContextMenu"
-        @refresh="handleRefresh"
-        @load-more="handleLoadMore"
-        @action="handleAction"
-        @filter-change="handleFilterChange"
-        @sort-change="handleSortChange"
-      />
+    <div class="explorer-main">
+      <div
+        ref="viewportRef"
+        class="explorer-viewport"
+      >
+        <ExplorerColumn
+          v-for="(column, index) in visibleColumns"
+          :key="index"
+          :column-state="column"
+          :index="index"
+          :is-active="index === activeColumnIndex"
+          @item-click="handleItemClick"
+          @item-select="handleItemSelect"
+          @context-menu="handleContextMenu"
+          @refresh="handleRefresh"
+          @load-more="handleLoadMore"
+          @action="handleAction"
+          @filter-change="handleFilterChange"
+          @sort-change="handleSortChange"
+        />
+      </div>
     </div>
 
     <ExplorerContextMenu
@@ -36,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { reactive, ref, watch, nextTick } from 'vue'
 import { useExplorer } from '../composables/useExplorer'
 import ExplorerBreadcrumb from './ExplorerBreadcrumb.vue'
 import ExplorerColumn from './ExplorerColumn.vue'
@@ -67,6 +72,9 @@ const {
   setSort
 } = store
 
+// Ref for viewport element
+const viewportRef = ref<HTMLElement | null>(null)
+
 const contextMenu = reactive({
   visible: false,
   x: 0,
@@ -76,6 +84,20 @@ const contextMenu = reactive({
   targetColumnIndex: -1
 })
 
+// Watch for active column index changes and auto-scroll to the right
+watch(activeColumnIndex, async () => {
+  await nextTick()
+  // Use requestAnimationFrame to ensure DOM is fully updated
+  requestAnimationFrame(() => {
+    if (viewportRef.value) {
+      viewportRef.value.scrollTo({
+        left: viewportRef.value.scrollWidth,
+        behavior: 'smooth'
+      })
+    }
+  })
+}, { flush: 'post' })
+
 // Initialize root column if provided
 if (props.rootColumn) {
   openColumn(props.rootColumn, 0)
@@ -84,6 +106,35 @@ if (props.rootColumn) {
 const handleItemClick = async (item: ExplorerItem, columnIndex: number) => {
   // Select the item first
   selectItem(columnIndex, item.id, false)
+
+  // Show detail view if item has show:true
+  if (item.show) {
+    const column = store.columns.get(columnIndex)
+    if (!column) return
+
+    // Create a detail view column
+    const detailColumn: ColumnObject = {
+      id: `detail-${item.id}`,
+      name: item.name,
+      isDetailView: true,
+      detailItem: item,
+      dataProvider: {
+        fetch: async () => ({ items: [item], hasMore: false })
+      },
+      selection: {
+        enabled: true,
+        multiple: false
+      },
+      actions: column.config.actions?.filter(action => action.showOnSingleSelect === true) || []
+    }
+
+    // Open as a regular column
+    await openColumn(detailColumn, columnIndex + 1)
+
+    // Auto-select the detail item so actions work
+    selectItem(columnIndex + 1, item.id, false)
+    return
+  }
 
   // Then navigate if configured
   const column = store.columns.get(columnIndex)
@@ -192,9 +243,16 @@ defineExpose({
   overflow: hidden;
 }
 
+.explorer-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
 .explorer-viewport {
   display: flex;
   flex: 1;
+  min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
 }

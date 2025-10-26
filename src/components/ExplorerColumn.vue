@@ -1,5 +1,47 @@
 <template>
-  <div class="explorer-column" :class="{ 'explorer-column--active': isActive }">
+  <!-- Detail View Layout -->
+  <div v-if="columnState.config.isDetailView" class="explorer-column explorer-column--detail">
+    <div class="detail-view">
+      <div class="detail-view__header">
+        <div class="detail-view__icon">
+          <component
+            v-if="columnState.config.detailItem?.icon"
+            :is="getIconComponent(columnState.config.detailItem.icon)"
+            :size="48"
+            :stroke-width="1.5"
+          />
+        </div>
+      </div>
+
+      <div class="detail-view__content">
+        <h3 class="detail-view__title">{{ columnState.config.detailItem?.name }}</h3>
+        <p v-if="columnState.config.detailItem?.description" class="detail-view__description">
+          {{ columnState.config.detailItem.description }}
+        </p>
+      </div>
+
+      <div v-if="visibleActions.length > 0" class="detail-view__actions">
+        <button
+          v-for="action in visibleActions"
+          :key="action.key"
+          class="detail-view__action-btn"
+          :class="[`detail-view__action-btn--${action.color || 'default'}`]"
+          @click="handleActionClick(action.key)"
+        >
+          <component
+            v-if="action.icon"
+            :is="getIconComponent(action.icon)"
+            :size="18"
+            :stroke-width="2"
+          />
+          <span>{{ action.label }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Normal Column Layout -->
+  <div v-else class="explorer-column" :class="{ 'explorer-column--active': isActive }">
     <div class="explorer-column__header">
       <h3 class="explorer-column__title">{{ columnState.config.name }}</h3>
       <div class="explorer-column__actions">
@@ -7,7 +49,10 @@
           v-if="hasFilters || hasSortOptions"
           class="explorer-column__filter-btn"
           @click="toggleFilters"
-          :class="{ 'active': showFilters }"
+          :class="{
+            'active': showFilters,
+            'has-active-filters': hasActiveFilters
+          }"
         >
           <Filter :size="16" />
         </button>
@@ -64,7 +109,6 @@
           :value="columnState.filters[filter.key] || ''"
           @change="handleFilterChange(filter.key, ($event.target as HTMLSelectElement).value)"
         >
-          <option value="">All</option>
           <option
             v-for="option in filter.options"
             :key="option.value"
@@ -126,7 +170,7 @@
       </div>
     </div>
 
-    <div v-if="hasSelection" class="explorer-column__footer">
+    <div v-if="hasSelection && !columnState.config.isDetailView" class="explorer-column__footer">
       <div class="explorer-column__selection-info">
         {{ columnState.selectedIds.size }} selected
       </div>
@@ -148,7 +192,24 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { Filter, RefreshCw, Trash, Download, Edit, Mail } from 'lucide-vue-next'
+import {
+  Filter,
+  RefreshCw,
+  Trash,
+  Download,
+  Edit,
+  Mail,
+  File,
+  Folder,
+  User,
+  FileText,
+  Book,
+  Clipboard,
+  Globe,
+  FileBadge,
+  FileCheck,
+  FileSpreadsheet
+} from 'lucide-vue-next'
 import ExplorerItem from './ExplorerItem.vue'
 import type { ColumnState, ExplorerItem as Item } from '../types'
 
@@ -221,6 +282,21 @@ const visibleActions = computed(() => {
   })
 })
 
+const hasActiveFilters = computed(() => {
+  // Check if any filter is applied
+  const hasFilters = Object.keys(props.columnState.filters).some(key => {
+    const value = props.columnState.filters[key]
+    return value !== null && value !== undefined && value !== ''
+  })
+
+  // Check if sort is applied
+  const hasSort = props.columnState.currentSort !== null &&
+                  props.columnState.currentSort !== undefined &&
+                  props.columnState.currentSort !== ''
+
+  return hasFilters || hasSort
+})
+
 const toggleFilters = () => {
   showFilters.value = !showFilters.value
 }
@@ -273,6 +349,30 @@ const getIcon = (iconName: string) => {
   }
   return iconMap[iconName] || null
 }
+
+const getIconComponent = (iconName: string) => {
+  const iconMap: Record<string, any> = {
+    'lucide:file': File,
+    'lucide:folder': Folder,
+    'lucide:user': User,
+    'lucide:file-text': FileText,
+    'lucide:book': Book,
+    'lucide:clipboard': Clipboard,
+    'lucide:globe': Globe,
+    'lucide:file-badge': FileBadge,
+    'lucide:file-check': FileCheck,
+    'lucide:file-spreadsheet': FileSpreadsheet,
+    'lucide:download': Download,
+    'lucide:trash': Trash,
+    'lucide:edit': Edit,
+    'lucide:mail': Mail
+  }
+  return iconMap[iconName] || File
+}
+
+const handleActionClick = (actionKey: string) => {
+  emit('action', actionKey, props.index)
+}
 </script>
 
 <style scoped>
@@ -281,7 +381,7 @@ const getIcon = (iconName: string) => {
   flex-direction: column;
   width: 300px;
   min-width: 300px;
-  height: 100%;
+  height: 100vh;
   background: white;
   border-right: 1px solid #e5e7eb;
   overflow: hidden;
@@ -337,6 +437,21 @@ const getIcon = (iconName: string) => {
   color: white;
 }
 
+.explorer-column__filter-btn.has-active-filters {
+  background: #dbeafe;
+  color: #3b82f6;
+}
+
+.explorer-column__filter-btn.has-active-filters:hover {
+  background: #bfdbfe;
+  color: #2563eb;
+}
+
+.explorer-column__filter-btn.active.has-active-filters {
+  background: #3b82f6;
+  color: white;
+}
+
 .explorer-column__filters {
   padding: 12px 16px;
   background: #f9fafb;
@@ -379,6 +494,9 @@ const getIcon = (iconName: string) => {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Important for flex scrolling */
 }
 
 .explorer-column__loading {
@@ -464,7 +582,8 @@ const getIcon = (iconName: string) => {
 }
 
 .explorer-column__items {
-  min-height: 100%;
+  /* Items should only take content height, not fill space */
+  min-height: 0; /* Allow shrinking below content size */
 }
 
 .explorer-column__loading-more {
@@ -526,5 +645,138 @@ const getIcon = (iconName: string) => {
 
 .action-btn--primary:hover {
   background: #eff6ff;
+}
+
+/* Detail View Styles */
+.explorer-column--detail {
+  width: 320px;
+  min-width: 320px;
+}
+
+.detail-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.detail-view__header {
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.detail-view__icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  background: #f9fafb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+}
+
+.detail-view__content {
+  padding: 24px;
+  flex: 1;
+}
+
+.detail-view__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 12px 0;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+.detail-view__description {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.detail-view__actions {
+  padding: 16px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.detail-view__action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  width: 100%;
+  justify-content: center;
+}
+
+.detail-view__action-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.detail-view__action-btn--primary {
+  background: #3b82f6;
+  color: #ffffff;
+  border-color: #3b82f6;
+}
+
+.detail-view__action-btn--primary:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.detail-view__action-btn--secondary {
+  background: #6b7280;
+  color: #ffffff;
+  border-color: #6b7280;
+}
+
+.detail-view__action-btn--secondary:hover {
+  background: #4b5563;
+  border-color: #4b5563;
+}
+
+.detail-view__action-btn--danger {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+}
+
+.detail-view__action-btn--danger:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.detail-view::-webkit-scrollbar {
+  width: 6px;
+}
+
+.detail-view::-webkit-scrollbar-track {
+  background: #f9fafb;
+}
+
+.detail-view::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.detail-view::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
 }
 </style>

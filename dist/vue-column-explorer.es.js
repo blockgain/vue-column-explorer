@@ -1,8 +1,8 @@
-import { reactive as ee, ref as P, computed as M, markRaw as Z, defineComponent as W, createElementBlock as r, openBlock as i, Fragment as E, renderList as L, createElementVNode as g, createBlock as R, createCommentVNode as C, normalizeClass as V, toDisplayString as I, unref as D, resolveComponent as ie, withModifiers as K, resolveDynamicComponent as G, normalizeStyle as te, createVNode as Y, createStaticVNode as ae, createTextVNode as re, onMounted as ue, onUnmounted as de, Teleport as me } from "vue";
-import * as X from "lucide-vue-next";
-import { ChevronRight as he, Filter as fe, RefreshCw as ve, Mail as ge, Edit as ne, Download as le, Trash as oe, Eye as be } from "lucide-vue-next";
-function ke(e) {
-  const m = ee(/* @__PURE__ */ new Map()), o = P(-1), d = P([]), u = P({}), h = P({
+import { reactive as ce, ref as q, computed as B, markRaw as ne, defineComponent as J, createElementBlock as u, openBlock as i, Fragment as E, renderList as L, createElementVNode as C, createBlock as N, createCommentVNode as w, normalizeClass as U, toDisplayString as I, unref as W, resolveComponent as ue, withModifiers as oe, resolveDynamicComponent as Y, normalizeStyle as ae, createVNode as K, createStaticVNode as de, createTextVNode as me, onMounted as he, onUnmounted as fe, Teleport as ve, watch as ge, nextTick as ke } from "vue";
+import * as Z from "lucide-vue-next";
+import { ChevronRight as be, Filter as Ce, RefreshCw as ye, Mail as se, Edit as ee, Download as te, Trash as le, FileSpreadsheet as Se, FileCheck as pe, FileBadge as we, Globe as _e, Clipboard as xe, Book as Ie, FileText as Me, User as $e, Folder as Be, File as ie, Eye as Oe } from "lucide-vue-next";
+function Ae(e) {
+  const f = ce(/* @__PURE__ */ new Map()), t = q(-1), h = q([]), d = q({}), k = q({
     appearance: {
       columnWidth: 300,
       maxVisibleColumns: 4,
@@ -21,65 +21,67 @@ function ke(e) {
       maxConcurrentRequests: 2,
       requestTimeout: 1e4
     }
-  }), k = M(() => {
-    const s = [];
-    for (let l = 0; l <= o.value; l++) {
-      const n = m.get(l);
-      n && s.push(n);
+  }), p = B(() => {
+    const n = [];
+    for (let c = 0; c <= t.value; c++) {
+      const s = f.get(c);
+      s && n.push(s);
     }
-    return s;
-  }), p = M(() => {
-    const s = m.get(o.value);
-    return (s == null ? void 0 : s.selectedIds) || /* @__PURE__ */ new Set();
-  }), x = M(() => {
-    const s = m.get(o.value);
-    return !!(s && s.selectedIds.size > 0);
-  }), O = M(() => {
-    const s = [];
-    for (let t = 0; t <= o.value; t++) {
-      const c = m.get(t);
-      if (c) {
-        const S = c.items.find(
-          (a) => c.selectedIds.has(a.id)
+    return n;
+  }), y = B(() => {
+    const n = f.get(t.value);
+    return (n == null ? void 0 : n.selectedIds) || /* @__PURE__ */ new Set();
+  }), x = B(() => {
+    const n = f.get(t.value);
+    return !!(n && n.selectedIds.size > 0);
+  }), A = B(() => {
+    const n = [];
+    for (let o = 0; o <= t.value; o++) {
+      const m = f.get(o);
+      if (m) {
+        const r = m.items.find(
+          (b) => m.selectedIds.has(b.id)
         );
-        s.push({
-          columnId: c.config.id,
-          selectedItem: S || null,
-          selectedIds: new Set(c.selectedIds)
+        n.push({
+          columnId: m.config.id,
+          selectedItem: r || null,
+          selectedIds: new Set(m.selectedIds)
         });
       }
     }
-    const l = o.value > 0 ? m.get(o.value - 1) : null, n = l ? l.items.find((t) => l.selectedIds.has(t.id)) : null;
+    const c = t.value > 0 ? f.get(t.value - 1) : null, s = c ? c.items.find((o) => c.selectedIds.has(o.id)) : null, v = f.get(t.value), l = v ? v.items.filter((o) => v.selectedIds.has(o.id)) : [];
     return {
-      parentId: (n == null ? void 0 : n.id) || null,
-      parentItem: n || null,
-      breadcrumb: d.value,
-      globalFilters: u.value,
-      columnChain: s,
+      parentId: (s == null ? void 0 : s.id) || null,
+      parentItem: s || null,
+      breadcrumb: h.value,
+      globalFilters: d.value,
+      columnChain: n,
+      selectedItems: l,
+      // Include selected items from active column
       external: e,
       // Include external context
-      getParentData(t) {
-        const c = o.value - t;
-        return s[c];
+      getParentData(o) {
+        const m = t.value - o;
+        return n[m];
       },
-      getColumnData(t) {
-        return s.find((c) => c.columnId === t);
+      getColumnData(o) {
+        return n.find((m) => m.columnId === o);
       }
     };
   });
-  function $(s) {
-    h.value = {
-      appearance: { ...h.value.appearance, ...s.appearance },
-      behavior: { ...h.value.behavior, ...s.behavior },
-      performance: { ...h.value.performance, ...s.performance }
+  function O(n) {
+    k.value = {
+      appearance: { ...k.value.appearance, ...n.appearance },
+      behavior: { ...k.value.behavior, ...n.behavior },
+      performance: { ...k.value.performance, ...n.performance }
     };
   }
-  async function v(s, l) {
-    const n = l ?? o.value + 1;
-    for (let c = m.size - 1; c > n; c--)
-      m.delete(c);
-    const t = {
-      config: Z(s),
+  async function S(n, c) {
+    const s = c ?? t.value + 1;
+    for (let l = f.size - 1; l > s; l--)
+      f.delete(l);
+    const v = {
+      config: ne(n),
       items: [],
       selectedIds: /* @__PURE__ */ new Set(),
       page: 0,
@@ -88,175 +90,184 @@ function ke(e) {
       error: null,
       filters: {}
     };
-    m.set(n, t), o.value = n, n === 0 && (d.value = [{
-      columnId: s.id,
-      columnName: s.name
-    }]), await _(n);
+    f.set(s, v), t.value = s, s === 0 && (h.value = [{
+      columnId: n.id,
+      columnName: n.name
+    }]), await M(s);
   }
-  async function _(s, l = 0) {
-    const n = m.get(s);
-    if (n) {
-      n.isLoading = !0, n.error = null, l === 0 && (n.items = []);
+  async function M(n, c = 0) {
+    const s = f.get(n);
+    if (s) {
+      s.isLoading = !0, s.error = null, c === 0 && (s.items = []);
       try {
-        const t = O.value, c = await n.config.dataProvider.fetch({
-          parentId: t.parentId,
-          page: l,
-          filters: { ...u.value, ...n.filters },
-          context: t
+        const v = A.value, l = await s.config.dataProvider.fetch({
+          parentId: v.parentId,
+          page: c,
+          filters: {
+            ...d.value,
+            ...s.filters,
+            ...s.currentSort ? { sort: s.currentSort } : {}
+          },
+          context: v
         });
-        let S = c.items;
-        if (n.currentSort && n.config.sortOptions) {
-          const a = n.config.sortOptions.find((f) => f.key === n.currentSort);
-          a && (S = [...S].sort(a.sortFn));
+        let o = l.items;
+        if (s.currentSort && s.config.sortOptions) {
+          const m = s.config.sortOptions.find((r) => r.key === s.currentSort);
+          m && m.sortFn && (o = [...o].sort(m.sortFn));
         }
-        l === 0 ? n.items = S : n.items.push(...S), n.hasMore = c.hasMore, n.page = l;
-      } catch (t) {
-        n.error = t, console.error("Error loading column data:", t);
+        c === 0 ? s.items = o : s.items.push(...o), s.hasMore = l.hasMore, s.page = c;
+      } catch (v) {
+        s.error = v, console.error("Error loading column data:", v);
       } finally {
-        n.isLoading = !1;
+        s.isLoading = !1;
       }
     }
   }
-  async function B(s) {
-    const l = m.get(s);
-    !l || !l.hasMore || l.isLoading || await _(s, l.page + 1);
+  async function F(n) {
+    const c = f.get(n);
+    !c || !c.hasMore || c.isLoading || await M(n, c.page + 1);
   }
-  async function N(s) {
-    const l = m.get(s);
-    l && (l.selectedIds.clear(), l.page = 0, await _(s, 0));
+  async function R(n) {
+    const c = f.get(n);
+    c && (c.selectedIds = /* @__PURE__ */ new Set(), c.page = 0, await M(n, 0));
   }
-  function q(s, l, n = !1) {
-    var c;
-    const t = m.get(s);
-    !t || !((c = t.config.selection) != null && c.enabled) || (n && t.config.selection.multiple ? t.selectedIds.has(l) ? t.selectedIds.delete(l) : t.selectedIds.add(l) : (t.selectedIds.clear(), t.selectedIds.add(l)));
+  function H(n, c, s = !1) {
+    var l;
+    const v = f.get(n);
+    if (!(!v || !((l = v.config.selection) != null && l.enabled)))
+      if (s && v.config.selection.multiple) {
+        const o = new Set(v.selectedIds);
+        o.has(c) ? o.delete(c) : o.add(c), v.selectedIds = o;
+      } else
+        v.selectedIds = /* @__PURE__ */ new Set([c]);
   }
-  function y(s) {
-    const l = m.get(s);
-    l && l.selectedIds.clear();
+  function D(n) {
+    const c = f.get(n);
+    c && (c.selectedIds = /* @__PURE__ */ new Set());
   }
-  async function z(s, l) {
-    var S, a, f;
-    const n = m.get(l);
-    if (!n || !n.config.itemClick) return;
-    const t = O.value, c = await ((a = (S = n.config.itemClick).handler) == null ? void 0 : a.call(S, s, t));
-    if (c != null && c.column)
-      d.value = d.value.slice(0, l + 1), await v(Z(c.column), l + 1), d.value.push({
-        columnId: c.column.id,
-        columnName: s.name,
-        itemId: s.id,
-        itemName: s.name
+  async function $(n, c) {
+    var o, m, r;
+    const s = f.get(c);
+    if (!s || !s.config.itemClick) return;
+    const v = A.value, l = await ((m = (o = s.config.itemClick).handler) == null ? void 0 : m.call(o, n, v));
+    if (l != null && l.column)
+      h.value = h.value.slice(0, c + 1), await S(ne(l.column), c + 1), h.value.push({
+        columnId: l.column.id,
+        columnName: n.name,
+        itemId: n.id,
+        itemName: n.name
       });
-    else if (c != null && c.action) {
-      const b = (f = n.config.actions) == null ? void 0 : f.find((w) => w.key === c.action);
-      b && await T(l, b.key);
-    } else c != null && c.custom && c.custom();
+    else if (l != null && l.action) {
+      const b = (r = s.config.actions) == null ? void 0 : r.find((a) => a.key === l.action);
+      b && await T(c, b.key);
+    } else l != null && l.custom && l.custom();
   }
-  async function T(s, l) {
-    var S;
-    const n = m.get(s);
-    if (!n) return;
-    const t = (S = n.config.actions) == null ? void 0 : S.find((a) => a.key === l);
-    if (!t) return;
-    const c = Array.from(n.selectedIds);
-    if (c.length !== 0)
+  async function T(n, c) {
+    var o;
+    const s = f.get(n);
+    if (!s) return;
+    const v = (o = s.config.actions) == null ? void 0 : o.find((m) => m.key === c);
+    if (!v) return;
+    const l = Array.from(s.selectedIds);
+    if (l.length !== 0)
       try {
-        const a = O.value;
-        await t.handler(c, a), console.log("[executeAction] skipRefresh:", t.skipRefresh, "actionKey:", l), t.skipRefresh ? console.log("[executeAction] Skipping refresh for column", s) : (console.log("[executeAction] Refreshing column", s), await N(s));
-      } catch (a) {
-        console.error("Error executing action:", a);
+        const m = A.value;
+        await v.handler(l, m), console.log("[executeAction] skipRefresh:", v.skipRefresh, "actionKey:", c), v.skipRefresh ? console.log("[executeAction] Skipping refresh for column", n) : (console.log("[executeAction] Refreshing column", n), await R(n));
+      } catch (m) {
+        console.error("Error executing action:", m);
       }
   }
-  function U(s) {
-    for (let l = m.size - 1; l > s; l--)
-      m.delete(l);
-    o.value = s, d.value = d.value.slice(0, s + 1);
+  function G(n) {
+    for (let c = f.size - 1; c > n; c--)
+      f.delete(c);
+    t.value = n, h.value = h.value.slice(0, n + 1);
   }
-  function F(s, l, n) {
-    const t = m.get(s);
-    t && (n == null || n === "" ? delete t.filters[l] : t.filters[l] = n, _(s, 0));
+  function X(n, c, s) {
+    const v = f.get(n);
+    v && (s == null || s === "" ? delete v.filters[c] : v.filters[c] = s, M(n, 0));
   }
-  function H(s, l) {
-    const n = m.get(s);
-    n && (l == null || l === "" ? n.currentSort = void 0 : n.currentSort = l, _(s, 0));
+  function P(n, c) {
+    const s = f.get(n);
+    s && (c == null || c === "" ? s.currentSort = void 0 : s.currentSort = c, M(n, 0));
   }
   return {
     // State
-    columns: m,
-    activeColumnIndex: o,
-    breadcrumb: d,
-    globalFilters: u,
-    config: h,
+    columns: f,
+    activeColumnIndex: t,
+    breadcrumb: h,
+    globalFilters: d,
+    config: k,
     // Getters
-    visibleColumns: k,
-    currentSelection: p,
+    visibleColumns: p,
+    currentSelection: y,
     canNavigateForward: x,
-    getContext: O,
+    getContext: A,
     // Actions
-    setConfig: $,
-    openColumn: v,
-    loadColumnData: _,
-    loadNextPage: B,
-    refreshColumn: N,
-    selectItem: q,
-    clearSelection: y,
-    navigateToItem: z,
+    setConfig: O,
+    openColumn: S,
+    loadColumnData: M,
+    loadNextPage: F,
+    refreshColumn: R,
+    selectItem: H,
+    clearSelection: D,
+    navigateToItem: $,
     executeAction: T,
-    navigateToBreadcrumb: U,
-    setFilter: F,
-    setSort: H
+    navigateToBreadcrumb: G,
+    setFilter: X,
+    setSort: P
   };
 }
-const Ce = { class: "explorer-breadcrumb" }, pe = ["onClick"], ye = /* @__PURE__ */ W({
+const Fe = { class: "explorer-breadcrumb" }, Ne = ["onClick"], Ee = /* @__PURE__ */ J({
   __name: "ExplorerBreadcrumb",
   props: {
     breadcrumb: {}
   },
   emits: ["navigate"],
-  setup(e, { emit: m }) {
-    const o = m, d = (u) => {
-      o("navigate", u);
+  setup(e, { emit: f }) {
+    const t = f, h = (d) => {
+      t("navigate", d);
     };
-    return (u, h) => (i(), r("div", Ce, [
-      (i(!0), r(E, null, L(e.breadcrumb, (k, p) => (i(), r("div", {
-        key: p,
+    return (d, k) => (i(), u("div", Fe, [
+      (i(!0), u(E, null, L(e.breadcrumb, (p, y) => (i(), u("div", {
+        key: y,
         class: "breadcrumb-item"
       }, [
-        g("button", {
-          class: V(["breadcrumb-item__button", { "breadcrumb-item__button--active": p === e.breadcrumb.length - 1 }]),
-          onClick: (x) => d(p)
-        }, I(k.itemName || k.columnName), 11, pe),
-        p < e.breadcrumb.length - 1 ? (i(), R(D(he), {
+        C("button", {
+          class: U(["breadcrumb-item__button", { "breadcrumb-item__button--active": y === e.breadcrumb.length - 1 }]),
+          onClick: (x) => h(y)
+        }, I(p.itemName || p.columnName), 11, Ne),
+        y < e.breadcrumb.length - 1 ? (i(), N(W(be), {
           key: 0,
           size: 16,
           class: "breadcrumb-separator"
-        })) : C("", !0)
+        })) : w("", !0)
       ]))), 128))
     ]));
   }
-}), j = (e, m) => {
-  const o = e.__vccOpts || e;
-  for (const [d, u] of m)
-    o[d] = u;
-  return o;
-}, Se = /* @__PURE__ */ j(ye, [["__scopeId", "data-v-27ca8931"]]), xe = {
+}), Q = (e, f) => {
+  const t = e.__vccOpts || e;
+  for (const [h, d] of f)
+    t[h] = d;
+  return t;
+}, Le = /* @__PURE__ */ Q(Ee, [["__scopeId", "data-v-27ca8931"]]), Re = {
   key: 0,
   class: "explorer-item__checkbox"
-}, _e = ["checked"], we = { class: "explorer-item__content" }, Ie = {
+}, De = ["checked"], ze = { class: "explorer-item__content" }, Te = {
   key: 0,
   class: "explorer-item__icon"
-}, Me = { class: "explorer-item__details" }, $e = { class: "explorer-item__name" }, Oe = {
+}, Pe = { class: "explorer-item__details" }, Ve = { class: "explorer-item__name" }, qe = {
   key: 0,
   class: "explorer-item__metadata"
-}, Ae = {
+}, Ue = {
   key: 1,
   class: "explorer-item__chevron"
-}, Be = {
+}, We = {
   key: 1,
   class: "item-status"
-}, Ne = {
+}, je = {
   key: 2,
   class: "item-count"
-}, Ee = /* @__PURE__ */ W({
+}, He = /* @__PURE__ */ J({
   __name: "ExplorerItem",
   props: {
     item: {},
@@ -267,104 +278,113 @@ const Ce = { class: "explorer-breadcrumb" }, pe = ["onClick"], ye = /* @__PURE__
     showMetadata: { type: Boolean, default: !0 }
   },
   emits: ["click", "dblclick", "contextmenu", "select"],
-  setup(e, { emit: m }) {
-    const o = e, d = m, u = M(() => {
-      if (!o.item.icon)
-        return o.item.type === "folder" ? X.Folder : X.File;
-      if (o.item.icon.startsWith("lucide:")) {
-        const _ = o.item.icon.replace("lucide:", "").split("-").map((N) => N.charAt(0).toUpperCase() + N.slice(1)).join(""), B = X[_];
-        if (B)
-          return B;
+  setup(e, { emit: f }) {
+    const t = e, h = f, d = B(() => {
+      if (!t.item.icon)
+        return t.item.type === "folder" ? Z.Folder : Z.File;
+      if (t.item.icon.startsWith("lucide:")) {
+        const M = t.item.icon.replace("lucide:", "").split("-").map((R) => R.charAt(0).toUpperCase() + R.slice(1)).join(""), F = Z[M];
+        if (F)
+          return F;
       }
-      return X.File;
-    }), h = M(() => {
-      const v = o.item.badgeColor;
-      return v && ["success", "error", "warning", "info"].includes(v.toLowerCase()) ? `item-badge--${v.toLowerCase()}` : "";
-    }), k = M(() => {
-      const v = o.item.badgeColor;
-      return v ? ["success", "error", "warning", "info"].includes(v.toLowerCase()) ? {} : {
-        backgroundColor: v,
+      return Z.File;
+    }), k = B(() => {
+      const S = t.item.badgeColor;
+      return S && ["success", "error", "warning", "info"].includes(S.toLowerCase()) ? `item-badge--${S.toLowerCase()}` : "";
+    }), p = B(() => {
+      const S = t.item.badgeColor;
+      return S ? ["success", "error", "warning", "info"].includes(S.toLowerCase()) ? {} : {
+        backgroundColor: S,
         color: "#ffffff"
       } : {};
-    }), p = (v) => {
-      o.clickable && !o.item.disabled && d("click", o.item, v);
-    }, x = (v) => {
-      d("dblclick", o.item, v);
-    }, O = (v) => {
-      d("contextmenu", o.item, v);
-    }, $ = (v) => {
-      d("select", o.item, !0);
+    }), y = (S) => {
+      t.clickable && !t.item.disabled && h("click", t.item, S);
+    }, x = (S) => {
+      h("dblclick", t.item, S);
+    }, A = (S) => {
+      h("contextmenu", t.item, S);
+    }, O = (S) => {
+      h("select", t.item, !0);
     };
-    return (v, _) => {
-      const B = ie("ChevronRight");
-      return i(), r("div", {
-        class: V(["explorer-item", {
+    return (S, M) => {
+      const F = ue("ChevronRight");
+      return i(), u("div", {
+        class: U(["explorer-item", {
           "explorer-item--selected": e.selected,
           "explorer-item--clickable": e.clickable && !e.item.disabled,
           "explorer-item--disabled": e.item.disabled
         }]),
-        onClick: p,
+        onClick: y,
         onDblclick: x,
-        onContextmenu: K(O, ["prevent"])
+        onContextmenu: oe(A, ["prevent"])
       }, [
-        e.selectable ? (i(), r("div", xe, [
-          g("input", {
+        e.selectable ? (i(), u("div", Re, [
+          C("input", {
             type: "checkbox",
             checked: e.selected,
-            onClick: K($, ["stop"])
-          }, null, 8, _e)
-        ])) : C("", !0),
-        g("div", we, [
-          e.showIcon ? (i(), r("div", Ie, [
-            (i(), R(G(u.value), { size: 20 }))
-          ])) : C("", !0),
-          g("div", Me, [
-            g("div", $e, I(e.item.name), 1),
-            e.showMetadata && e.item.description ? (i(), r("div", Oe, I(e.item.description), 1)) : C("", !0)
+            onClick: oe(O, ["stop"])
+          }, null, 8, De)
+        ])) : w("", !0),
+        C("div", ze, [
+          e.showIcon ? (i(), u("div", Te, [
+            (i(), N(Y(d.value), { size: 20 }))
+          ])) : w("", !0),
+          C("div", Pe, [
+            C("div", Ve, I(e.item.name), 1),
+            e.showMetadata && e.item.description ? (i(), u("div", qe, I(e.item.description), 1)) : w("", !0)
           ])
         ]),
-        e.item.badge !== void 0 || e.item.status !== void 0 || e.item.count !== void 0 || e.item.hasChildren ? (i(), r("div", Ae, [
-          e.item.badge !== void 0 ? (i(), r("span", {
+        e.item.badge !== void 0 || e.item.status !== void 0 || e.item.count !== void 0 || e.item.hasChildren ? (i(), u("div", Ue, [
+          e.item.badge !== void 0 ? (i(), u("span", {
             key: 0,
-            class: V(["item-badge", h.value]),
-            style: te(k.value)
-          }, I(e.item.badge), 7)) : e.item.status !== void 0 ? (i(), r("span", Be, I(e.item.status), 1)) : e.item.count !== void 0 ? (i(), r("span", Ne, I(e.item.count), 1)) : C("", !0),
-          e.item.hasChildren ? (i(), R(B, {
+            class: U(["item-badge", k.value]),
+            style: ae(p.value)
+          }, I(e.item.badge), 7)) : e.item.status !== void 0 ? (i(), u("span", We, I(e.item.status), 1)) : e.item.count !== void 0 ? (i(), u("span", je, I(e.item.count), 1)) : w("", !0),
+          e.item.hasChildren ? (i(), N(F, {
             key: 3,
             size: 16
-          })) : C("", !0)
-        ])) : C("", !0)
+          })) : w("", !0)
+        ])) : w("", !0)
       ], 34);
     };
   }
-}), Le = /* @__PURE__ */ j(Ee, [["__scopeId", "data-v-ed186481"]]), Re = { class: "explorer-column__header" }, Fe = { class: "explorer-column__title" }, De = { class: "explorer-column__actions" }, ze = {
+}), Ge = /* @__PURE__ */ Q(He, [["__scopeId", "data-v-ed186481"]]), Xe = {
+  key: 0,
+  class: "explorer-column explorer-column--detail"
+}, Ye = { class: "detail-view" }, Je = { class: "detail-view__header" }, Qe = { class: "detail-view__icon" }, Ze = { class: "detail-view__content" }, Ke = { class: "detail-view__title" }, et = {
+  key: 0,
+  class: "detail-view__description"
+}, tt = {
+  key: 0,
+  class: "detail-view__actions"
+}, lt = ["onClick"], nt = { class: "explorer-column__header" }, ot = { class: "explorer-column__title" }, st = { class: "explorer-column__actions" }, it = {
   key: 0,
   class: "explorer-column__filters"
-}, Te = {
+}, ct = {
   key: 0,
   class: "filter-item"
-}, Pe = ["value"], Ve = ["value"], qe = { class: "filter-item__label" }, Ue = ["placeholder", "value", "onInput"], He = ["placeholder", "value", "onInput"], We = ["value", "onChange"], je = ["value"], Xe = {
+}, at = ["value"], rt = ["value"], ut = { class: "filter-item__label" }, dt = ["placeholder", "value", "onInput"], mt = ["placeholder", "value", "onInput"], ht = ["value", "onChange"], ft = ["value"], vt = {
   key: 0,
   class: "explorer-column__loading"
-}, Ye = {
+}, gt = {
   key: 1,
   class: "explorer-column__error"
-}, Ge = {
+}, kt = {
   key: 0,
   class: "error-message"
-}, Je = {
+}, bt = {
   key: 2,
   class: "explorer-column__empty"
-}, Qe = {
+}, Ct = {
   key: 3,
   class: "explorer-column__items"
-}, Ze = {
+}, yt = {
   key: 0,
   class: "explorer-column__loading-more"
-}, Ke = {
+}, St = {
   key: 1,
   class: "explorer-column__footer"
-}, et = { class: "explorer-column__selection-info" }, tt = { class: "explorer-column__quick-actions" }, nt = ["onClick"], lt = /* @__PURE__ */ W({
+}, pt = { class: "explorer-column__selection-info" }, wt = { class: "explorer-column__quick-actions" }, _t = ["onClick"], xt = /* @__PURE__ */ J({
   __name: "ExplorerColumn",
   props: {
     columnState: {},
@@ -372,169 +392,228 @@ const Ce = { class: "explorer-breadcrumb" }, pe = ["onClick"], ye = /* @__PURE__
     isActive: { type: Boolean }
   },
   emits: ["item-click", "item-select", "context-menu", "refresh", "load-more", "action", "filter-change", "sort-change"],
-  setup(e, { emit: m }) {
-    const o = e, d = m, u = P(null), h = P(!1), k = M(() => o.columnState.config.filters && o.columnState.config.filters.length > 0), p = M(() => o.columnState.config.sortOptions && o.columnState.config.sortOptions.length > 0), x = M(() => o.columnState.selectedIds.size > 0), O = M(() => {
+  setup(e, { emit: f }) {
+    const t = e, h = f, d = q(null), k = q(!1), p = B(() => t.columnState.config.filters && t.columnState.config.filters.length > 0), y = B(() => t.columnState.config.sortOptions && t.columnState.config.sortOptions.length > 0), x = B(() => t.columnState.selectedIds.size > 0), A = B(() => {
       var l;
-      return ((l = o.columnState.config.view) == null ? void 0 : l.loadingRows) || 10;
-    }), $ = M(() => {
+      return ((l = t.columnState.config.view) == null ? void 0 : l.loadingRows) || 10;
+    }), O = B(() => {
       var l;
-      return ((l = o.columnState.config.view) == null ? void 0 : l.emptyMessage) || "No items found";
-    }), v = M(() => o.columnState.isLoading && o.columnState.items.length === 0), _ = M(() => {
-      if (!o.columnState.config.actions) return [];
-      const l = o.columnState.items.filter(
-        (t) => o.columnState.selectedIds.has(t.id)
-      ), n = l.length;
-      return o.columnState.config.actions.filter((t) => n === 1 && t.showOnSingleSelect === !1 || n > 1 && t.showOnMultipleSelect === !1 || n === 1 && t.showOnMultipleSelect === !0 && t.showOnSingleSelect === !1 || n > 1 && t.showOnSingleSelect === !0 && t.showOnMultipleSelect === !1 ? !1 : t.visible ? t.visible(l) : !0);
-    }), B = () => {
-      h.value = !h.value;
-    }, N = (l, n) => {
-      d("item-click", l, o.index);
-    }, q = (l, n) => {
-      d("item-select", l, o.index, n);
-    }, y = (l, n) => {
-      d("context-menu", l, o.index, n);
-    }, z = () => {
-      d("refresh", o.index);
+      return ((l = t.columnState.config.view) == null ? void 0 : l.emptyMessage) || "No items found";
+    }), S = B(() => t.columnState.isLoading && t.columnState.items.length === 0), M = B(() => {
+      if (!t.columnState.config.actions) return [];
+      const l = t.columnState.items.filter(
+        (m) => t.columnState.selectedIds.has(m.id)
+      ), o = l.length;
+      return t.columnState.config.actions.filter((m) => o === 1 && m.showOnSingleSelect === !1 || o > 1 && m.showOnMultipleSelect === !1 || o === 1 && m.showOnMultipleSelect === !0 && m.showOnSingleSelect === !1 || o > 1 && m.showOnSingleSelect === !0 && m.showOnMultipleSelect === !1 ? !1 : m.visible ? m.visible(l) : !0);
+    }), F = B(() => {
+      const l = Object.keys(t.columnState.filters).some((m) => {
+        const r = t.columnState.filters[m];
+        return r != null && r !== "";
+      }), o = t.columnState.currentSort !== null && t.columnState.currentSort !== void 0 && t.columnState.currentSort !== "";
+      return l || o;
+    }), R = () => {
+      k.value = !k.value;
+    }, H = (l, o) => {
+      h("item-click", l, t.index);
+    }, D = (l, o) => {
+      h("item-select", l, t.index, o);
+    }, $ = (l, o) => {
+      h("context-menu", l, t.index, o);
     }, T = () => {
-      if (!u.value) return;
-      const { scrollTop: l, scrollHeight: n, clientHeight: t } = u.value;
-      l + t >= n - 100 && o.columnState.hasMore && !o.columnState.isLoading && d("load-more", o.index);
-    }, U = (l) => {
-      d("action", l, o.index);
-    }, F = (l, n) => {
-      d("filter-change", l, n, o.index);
-    }, H = (l) => {
-      d("sort-change", l, o.index);
-    }, s = (l) => ({
-      "lucide:trash": oe,
-      "lucide:download": le,
-      "lucide:edit": ne,
-      "lucide:mail": ge
-    })[l] || null;
-    return (l, n) => (i(), r("div", {
-      class: V(["explorer-column", { "explorer-column--active": e.isActive }])
-    }, [
-      g("div", Re, [
-        g("h3", Fe, I(e.columnState.config.name), 1),
-        g("div", De, [
-          k.value || p.value ? (i(), r("button", {
-            key: 0,
-            class: V(["explorer-column__filter-btn", { active: h.value }]),
-            onClick: B
-          }, [
-            Y(D(fe), { size: 16 })
-          ], 2)) : C("", !0),
-          g("button", {
-            class: "explorer-column__refresh-btn",
-            onClick: z
-          }, [
-            Y(D(ve), { size: 16 })
-          ])
+      h("refresh", t.index);
+    }, G = () => {
+      if (!d.value) return;
+      const { scrollTop: l, scrollHeight: o, clientHeight: m } = d.value;
+      l + m >= o - 100 && t.columnState.hasMore && !t.columnState.isLoading && h("load-more", t.index);
+    }, X = (l) => {
+      h("action", l, t.index);
+    }, P = (l, o) => {
+      h("filter-change", l, o, t.index);
+    }, n = (l) => {
+      h("sort-change", l, t.index);
+    }, c = (l) => ({
+      "lucide:trash": le,
+      "lucide:download": te,
+      "lucide:edit": ee,
+      "lucide:mail": se
+    })[l] || null, s = (l) => ({
+      "lucide:file": ie,
+      "lucide:folder": Be,
+      "lucide:user": $e,
+      "lucide:file-text": Me,
+      "lucide:book": Ie,
+      "lucide:clipboard": xe,
+      "lucide:globe": _e,
+      "lucide:file-badge": we,
+      "lucide:file-check": pe,
+      "lucide:file-spreadsheet": Se,
+      "lucide:download": te,
+      "lucide:trash": le,
+      "lucide:edit": ee,
+      "lucide:mail": se
+    })[l] || ie, v = (l) => {
+      h("action", l, t.index);
+    };
+    return (l, o) => {
+      var m, r, b;
+      return e.columnState.config.isDetailView ? (i(), u("div", Xe, [
+        C("div", Ye, [
+          C("div", Je, [
+            C("div", Qe, [
+              (m = e.columnState.config.detailItem) != null && m.icon ? (i(), N(Y(s(e.columnState.config.detailItem.icon)), {
+                key: 0,
+                size: 48,
+                "stroke-width": 1.5
+              })) : w("", !0)
+            ])
+          ]),
+          C("div", Ze, [
+            C("h3", Ke, I((r = e.columnState.config.detailItem) == null ? void 0 : r.name), 1),
+            (b = e.columnState.config.detailItem) != null && b.description ? (i(), u("p", et, I(e.columnState.config.detailItem.description), 1)) : w("", !0)
+          ]),
+          M.value.length > 0 ? (i(), u("div", tt, [
+            (i(!0), u(E, null, L(M.value, (a) => (i(), u("button", {
+              key: a.key,
+              class: U(["detail-view__action-btn", [`detail-view__action-btn--${a.color || "default"}`]]),
+              onClick: (g) => v(a.key)
+            }, [
+              a.icon ? (i(), N(Y(s(a.icon)), {
+                key: 0,
+                size: 18,
+                "stroke-width": 2
+              })) : w("", !0),
+              C("span", null, I(a.label), 1)
+            ], 10, lt))), 128))
+          ])) : w("", !0)
         ])
-      ]),
-      h.value && (k.value || p.value) ? (i(), r("div", ze, [
-        p.value ? (i(), r("div", Te, [
-          n[2] || (n[2] = g("label", { class: "filter-item__label" }, "Sıralama", -1)),
-          g("select", {
-            class: "filter-item__select",
-            value: e.columnState.currentSort || "",
-            onChange: n[0] || (n[0] = (t) => H(t.target.value))
-          }, [
-            n[1] || (n[1] = g("option", { value: "" }, "Varsayılan", -1)),
-            (i(!0), r(E, null, L(e.columnState.config.sortOptions, (t) => (i(), r("option", {
-              key: t.key,
-              value: t.key
-            }, I(t.label), 9, Ve))), 128))
-          ], 40, Pe)
-        ])) : C("", !0),
-        (i(!0), r(E, null, L(e.columnState.config.filters, (t) => (i(), r("div", {
-          key: t.key,
-          class: "filter-item"
-        }, [
-          g("label", qe, I(t.label), 1),
-          t.type === "search" ? (i(), r("input", {
-            key: 0,
-            type: "text",
-            class: "filter-item__input",
-            placeholder: `Search ${t.label.toLowerCase()}...`,
-            value: e.columnState.filters[t.key] || "",
-            onInput: (c) => F(t.key, c.target.value)
-          }, null, 40, Ue)) : t.type === "number" ? (i(), r("input", {
-            key: 1,
-            type: "number",
-            class: "filter-item__input",
-            placeholder: t.label,
-            value: e.columnState.filters[t.key] || "",
-            onInput: (c) => F(t.key, c.target.value)
-          }, null, 40, He)) : t.type === "select" ? (i(), r("select", {
-            key: 2,
-            class: "filter-item__select",
-            value: e.columnState.filters[t.key] || "",
-            onChange: (c) => F(t.key, c.target.value)
-          }, [
-            n[3] || (n[3] = g("option", { value: "" }, "All", -1)),
-            (i(!0), r(E, null, L(t.options, (c) => (i(), r("option", {
-              key: c.value,
-              value: c.value
-            }, I(c.label), 9, je))), 128))
-          ], 40, We)) : C("", !0)
-        ]))), 128))
-      ])) : C("", !0),
-      g("div", {
-        ref_key: "scrollContainer",
-        ref: u,
-        class: "explorer-column__content",
-        onScroll: T
+      ])) : (i(), u("div", {
+        key: 1,
+        class: U(["explorer-column", { "explorer-column--active": e.isActive }])
       }, [
-        v.value ? (i(), r("div", Xe, [
-          (i(!0), r(E, null, L(O.value, (t) => (i(), r("div", {
-            key: t,
-            class: "skeleton-item"
-          }, [...n[4] || (n[4] = [
-            ae('<div class="skeleton-item__icon" data-v-4cc9db4b></div><div class="skeleton-item__content" data-v-4cc9db4b><div class="skeleton-item__name" data-v-4cc9db4b></div><div class="skeleton-item__metadata" data-v-4cc9db4b></div></div><div class="skeleton-item__chevron" data-v-4cc9db4b></div>', 3)
-          ])]))), 128))
-        ])) : e.columnState.error ? (i(), r("div", Ye, [
-          n[5] || (n[5] = g("p", null, "Error loading data", -1)),
-          e.columnState.error.message ? (i(), r("p", Ge, I(e.columnState.error.message), 1)) : C("", !0),
-          g("button", { onClick: z }, "Retry")
-        ])) : e.columnState.items.length === 0 && !e.columnState.isLoading ? (i(), r("div", Je, I($.value), 1)) : e.columnState.items.length > 0 ? (i(), r("div", Qe, [
-          (i(!0), r(E, null, L(e.columnState.items, (t) => {
-            var c, S, a;
-            return i(), R(Le, {
-              key: t.id,
-              item: t,
-              selected: e.columnState.selectedIds.has(t.id),
-              selectable: ((c = e.columnState.config.selection) == null ? void 0 : c.multiple) ?? !1,
-              clickable: !0,
-              "show-icon": ((S = e.columnState.config.view) == null ? void 0 : S.showIcon) ?? !0,
-              "show-metadata": ((a = e.columnState.config.view) == null ? void 0 : a.showMetadata) ?? !0,
-              onClick: (f, b) => N(f),
-              onSelect: (f, b) => q(f, b),
-              onContextmenu: (f, b) => y(f, b)
-            }, null, 8, ["item", "selected", "selectable", "show-icon", "show-metadata", "onClick", "onSelect", "onContextmenu"]);
-          }), 128)),
-          e.columnState.isLoading && e.columnState.items.length > 0 ? (i(), r("div", Ze, " Loading more... ")) : C("", !0)
-        ])) : C("", !0)
-      ], 544),
-      x.value ? (i(), r("div", Ke, [
-        g("div", et, I(e.columnState.selectedIds.size) + " selected ", 1),
-        g("div", tt, [
-          (i(!0), r(E, null, L(_.value, (t) => (i(), r("button", {
-            key: t.key,
-            class: V(["action-btn", `action-btn--${t.color || "default"}`]),
-            onClick: (c) => U(t.key)
-          }, [
-            t.icon ? (i(), R(G(s(t.icon)), {
+        C("div", nt, [
+          C("h3", ot, I(e.columnState.config.name), 1),
+          C("div", st, [
+            p.value || y.value ? (i(), u("button", {
               key: 0,
-              size: 14
-            })) : C("", !0),
-            re(" " + I(t.label), 1)
-          ], 10, nt))), 128))
-        ])
-      ])) : C("", !0)
-    ], 2));
+              class: U(["explorer-column__filter-btn", {
+                active: k.value,
+                "has-active-filters": F.value
+              }]),
+              onClick: R
+            }, [
+              K(W(Ce), { size: 16 })
+            ], 2)) : w("", !0),
+            C("button", {
+              class: "explorer-column__refresh-btn",
+              onClick: T
+            }, [
+              K(W(ye), { size: 16 })
+            ])
+          ])
+        ]),
+        k.value && (p.value || y.value) ? (i(), u("div", it, [
+          y.value ? (i(), u("div", ct, [
+            o[2] || (o[2] = C("label", { class: "filter-item__label" }, "Sıralama", -1)),
+            C("select", {
+              class: "filter-item__select",
+              value: e.columnState.currentSort || "",
+              onChange: o[0] || (o[0] = (a) => n(a.target.value))
+            }, [
+              o[1] || (o[1] = C("option", { value: "" }, "Varsayılan", -1)),
+              (i(!0), u(E, null, L(e.columnState.config.sortOptions, (a) => (i(), u("option", {
+                key: a.key,
+                value: a.key
+              }, I(a.label), 9, rt))), 128))
+            ], 40, at)
+          ])) : w("", !0),
+          (i(!0), u(E, null, L(e.columnState.config.filters, (a) => (i(), u("div", {
+            key: a.key,
+            class: "filter-item"
+          }, [
+            C("label", ut, I(a.label), 1),
+            a.type === "search" ? (i(), u("input", {
+              key: 0,
+              type: "text",
+              class: "filter-item__input",
+              placeholder: `Search ${a.label.toLowerCase()}...`,
+              value: e.columnState.filters[a.key] || "",
+              onInput: (g) => P(a.key, g.target.value)
+            }, null, 40, dt)) : a.type === "number" ? (i(), u("input", {
+              key: 1,
+              type: "number",
+              class: "filter-item__input",
+              placeholder: a.label,
+              value: e.columnState.filters[a.key] || "",
+              onInput: (g) => P(a.key, g.target.value)
+            }, null, 40, mt)) : a.type === "select" ? (i(), u("select", {
+              key: 2,
+              class: "filter-item__select",
+              value: e.columnState.filters[a.key] || "",
+              onChange: (g) => P(a.key, g.target.value)
+            }, [
+              (i(!0), u(E, null, L(a.options, (g) => (i(), u("option", {
+                key: g.value,
+                value: g.value
+              }, I(g.label), 9, ft))), 128))
+            ], 40, ht)) : w("", !0)
+          ]))), 128))
+        ])) : w("", !0),
+        C("div", {
+          ref_key: "scrollContainer",
+          ref: d,
+          class: "explorer-column__content",
+          onScroll: G
+        }, [
+          S.value ? (i(), u("div", vt, [
+            (i(!0), u(E, null, L(A.value, (a) => (i(), u("div", {
+              key: a,
+              class: "skeleton-item"
+            }, [...o[3] || (o[3] = [
+              de('<div class="skeleton-item__icon" data-v-9b3a2381></div><div class="skeleton-item__content" data-v-9b3a2381><div class="skeleton-item__name" data-v-9b3a2381></div><div class="skeleton-item__metadata" data-v-9b3a2381></div></div><div class="skeleton-item__chevron" data-v-9b3a2381></div>', 3)
+            ])]))), 128))
+          ])) : e.columnState.error ? (i(), u("div", gt, [
+            o[4] || (o[4] = C("p", null, "Error loading data", -1)),
+            e.columnState.error.message ? (i(), u("p", kt, I(e.columnState.error.message), 1)) : w("", !0),
+            C("button", { onClick: T }, "Retry")
+          ])) : e.columnState.items.length === 0 && !e.columnState.isLoading ? (i(), u("div", bt, I(O.value), 1)) : e.columnState.items.length > 0 ? (i(), u("div", Ct, [
+            (i(!0), u(E, null, L(e.columnState.items, (a) => {
+              var g, z, V;
+              return i(), N(Ge, {
+                key: a.id,
+                item: a,
+                selected: e.columnState.selectedIds.has(a.id),
+                selectable: ((g = e.columnState.config.selection) == null ? void 0 : g.multiple) ?? !1,
+                clickable: !0,
+                "show-icon": ((z = e.columnState.config.view) == null ? void 0 : z.showIcon) ?? !0,
+                "show-metadata": ((V = e.columnState.config.view) == null ? void 0 : V.showMetadata) ?? !0,
+                onClick: (_, j) => H(_),
+                onSelect: (_, j) => D(_, j),
+                onContextmenu: (_, j) => $(_, j)
+              }, null, 8, ["item", "selected", "selectable", "show-icon", "show-metadata", "onClick", "onSelect", "onContextmenu"]);
+            }), 128)),
+            e.columnState.isLoading && e.columnState.items.length > 0 ? (i(), u("div", yt, " Loading more... ")) : w("", !0)
+          ])) : w("", !0)
+        ], 544),
+        x.value && !e.columnState.config.isDetailView ? (i(), u("div", St, [
+          C("div", pt, I(e.columnState.selectedIds.size) + " selected ", 1),
+          C("div", wt, [
+            (i(!0), u(E, null, L(M.value, (a) => (i(), u("button", {
+              key: a.key,
+              class: U(["action-btn", `action-btn--${a.color || "default"}`]),
+              onClick: (g) => X(a.key)
+            }, [
+              a.icon ? (i(), N(Y(c(a.icon)), {
+                key: 0,
+                size: 14
+              })) : w("", !0),
+              me(" " + I(a.label), 1)
+            ], 10, _t))), 128))
+          ])
+        ])) : w("", !0)
+      ], 2));
+    };
   }
-}), ot = /* @__PURE__ */ j(lt, [["__scopeId", "data-v-4cc9db4b"]]), st = ["onClick"], ct = /* @__PURE__ */ W({
+}), It = /* @__PURE__ */ Q(xt, [["__scopeId", "data-v-9b3a2381"]]), Mt = ["onClick"], $t = /* @__PURE__ */ J({
   __name: "ExplorerContextMenu",
   props: {
     visible: { type: Boolean },
@@ -543,65 +622,65 @@ const Ce = { class: "explorer-breadcrumb" }, pe = ["onClick"], ye = /* @__PURE__
     actions: {}
   },
   emits: ["close", "action"],
-  setup(e, { emit: m }) {
-    const o = e, d = m, u = () => {
-      d("close");
-    }, h = (x) => {
-      d("action", x.key), d("close");
-    }, k = (x) => ({
-      "lucide:download": le,
-      "lucide:trash": oe,
-      "lucide:edit": ne,
-      "lucide:eye": be
-    })[x] || null, p = () => {
-      o.visible && d("close");
+  setup(e, { emit: f }) {
+    const t = e, h = f, d = () => {
+      h("close");
+    }, k = (x) => {
+      h("action", x.key), h("close");
+    }, p = (x) => ({
+      "lucide:download": te,
+      "lucide:trash": le,
+      "lucide:edit": ee,
+      "lucide:eye": Oe
+    })[x] || null, y = () => {
+      t.visible && h("close");
     };
-    return ue(() => {
-      document.addEventListener("click", p);
-    }), de(() => {
-      document.removeEventListener("click", p);
-    }), (x, O) => (i(), R(me, { to: "body" }, [
-      e.visible ? (i(), r("div", {
+    return he(() => {
+      document.addEventListener("click", y);
+    }), fe(() => {
+      document.removeEventListener("click", y);
+    }), (x, A) => (i(), N(ve, { to: "body" }, [
+      e.visible ? (i(), u("div", {
         key: 0,
         class: "context-menu",
-        style: te({ top: `${e.y}px`, left: `${e.x}px` }),
-        onClick: u
+        style: ae({ top: `${e.y}px`, left: `${e.x}px` }),
+        onClick: d
       }, [
-        (i(!0), r(E, null, L(e.actions, ($) => (i(), r("div", {
-          key: $.key,
+        (i(!0), u(E, null, L(e.actions, (O) => (i(), u("div", {
+          key: O.key,
           class: "context-menu__item",
-          onClick: (v) => h($)
+          onClick: (S) => k(O)
         }, [
-          $.icon ? (i(), R(G(k($.icon)), {
+          O.icon ? (i(), N(Y(p(O.icon)), {
             key: 0,
             size: 16
-          })) : C("", !0),
-          g("span", null, I($.label), 1)
-        ], 8, st))), 128))
-      ], 4)) : C("", !0)
+          })) : w("", !0),
+          C("span", null, I(O.label), 1)
+        ], 8, Mt))), 128))
+      ], 4)) : w("", !0)
     ]));
   }
-}), it = /* @__PURE__ */ j(ct, [["__scopeId", "data-v-569d2f59"]]), at = { class: "explorer-container" }, rt = { class: "explorer-viewport" }, ut = /* @__PURE__ */ W({
+}), Bt = /* @__PURE__ */ Q($t, [["__scopeId", "data-v-569d2f59"]]), Ot = { class: "explorer-container" }, At = { class: "explorer-main" }, Ft = /* @__PURE__ */ J({
   __name: "ExplorerContainer",
   props: {
     rootColumn: {},
     context: {}
   },
-  setup(e, { expose: m }) {
-    const o = e, d = ke(o.context), {
-      breadcrumb: u,
-      visibleColumns: h,
-      activeColumnIndex: k,
-      openColumn: p,
+  setup(e, { expose: f }) {
+    const t = e, h = Ae(t.context), {
+      breadcrumb: d,
+      visibleColumns: k,
+      activeColumnIndex: p,
+      openColumn: y,
       selectItem: x,
-      navigateToItem: O,
-      navigateToBreadcrumb: $,
-      refreshColumn: v,
-      loadNextPage: _,
-      executeAction: B,
-      setFilter: N,
-      setSort: q
-    } = d, y = ee({
+      navigateToItem: A,
+      navigateToBreadcrumb: O,
+      refreshColumn: S,
+      loadNextPage: M,
+      executeAction: F,
+      setFilter: R,
+      setSort: H
+    } = h, D = q(null), $ = ce({
       visible: !1,
       x: 0,
       y: 0,
@@ -609,88 +688,121 @@ const Ce = { class: "explorer-breadcrumb" }, pe = ["onClick"], ye = /* @__PURE__
       targetItem: null,
       targetColumnIndex: -1
     });
-    o.rootColumn && p(o.rootColumn, 0);
-    const z = async (a, f) => {
-      x(f, a.id, !1);
-      const b = d.columns.get(f);
-      b != null && b.config.itemClick && await O(a, f);
-    }, T = (a, f, b) => {
-      x(f, a.id, b);
-    }, U = (a, f, b) => {
-      const w = d.columns.get(f);
-      if (!(w != null && w.config.actions) || w.config.actions.length === 0) return;
-      w.selectedIds.has(a.id) || x(f, a.id, !1);
-      const J = w.selectedIds.size, Q = w.config.actions.filter((A) => {
-        if (J === 1) {
-          if (A.showOnSingleSelect !== void 0 && !A.showOnSingleSelect || A.showOnMultipleSelect === !0 && A.showOnSingleSelect !== void 0 && !A.showOnSingleSelect) return !1;
-        } else if (J > 1 && (A.showOnMultipleSelect !== void 0 && !A.showOnMultipleSelect || A.showOnSingleSelect === !0 && A.showOnMultipleSelect !== void 0 && !A.showOnMultipleSelect))
-          return !1;
-        const se = w.items.filter((ce) => w.selectedIds.has(ce.id));
-        return !(A.visible && !A.visible(se));
+    ge(p, async () => {
+      await ke(), requestAnimationFrame(() => {
+        D.value && D.value.scrollTo({
+          left: D.value.scrollWidth,
+          behavior: "smooth"
+        });
       });
-      Q.length !== 0 && (y.visible = !0, y.x = b.clientX, y.y = b.clientY, y.actions = Q, y.targetItem = a, y.targetColumnIndex = f);
-    }, F = () => {
-      y.visible = !1;
-    }, H = async (a) => {
-      y.targetColumnIndex >= 0 && await B(y.targetColumnIndex, a);
-    }, s = (a) => {
-      $(a);
-    }, l = async (a) => {
-      await v(a);
-    }, n = async (a) => {
-      await _(a);
-    }, t = async (a, f) => {
-      await B(f, a);
-    }, c = (a, f, b) => {
-      N(b, a, f);
-    }, S = (a, f) => {
-      q(f, a);
+    }, { flush: "post" }), t.rootColumn && y(t.rootColumn, 0);
+    const T = async (r, b) => {
+      var g;
+      if (x(b, r.id, !1), r.show) {
+        const z = h.columns.get(b);
+        if (!z) return;
+        const V = {
+          id: `detail-${r.id}`,
+          name: r.name,
+          isDetailView: !0,
+          detailItem: r,
+          dataProvider: {
+            fetch: async () => ({ items: [r], hasMore: !1 })
+          },
+          selection: {
+            enabled: !0,
+            multiple: !1
+          },
+          actions: ((g = z.config.actions) == null ? void 0 : g.filter((_) => _.showOnSingleSelect === !0)) || []
+        };
+        await y(V, b + 1), x(b + 1, r.id, !1);
+        return;
+      }
+      const a = h.columns.get(b);
+      a != null && a.config.itemClick && await A(r, b);
+    }, G = (r, b, a) => {
+      x(b, r.id, a);
+    }, X = (r, b, a) => {
+      const g = h.columns.get(b);
+      if (!(g != null && g.config.actions) || g.config.actions.length === 0) return;
+      g.selectedIds.has(r.id) || x(b, r.id, !1);
+      const z = g.selectedIds.size, V = g.config.actions.filter((_) => {
+        if (z === 1) {
+          if (_.showOnSingleSelect !== void 0 && !_.showOnSingleSelect || _.showOnMultipleSelect === !0 && _.showOnSingleSelect !== void 0 && !_.showOnSingleSelect) return !1;
+        } else if (z > 1 && (_.showOnMultipleSelect !== void 0 && !_.showOnMultipleSelect || _.showOnSingleSelect === !0 && _.showOnMultipleSelect !== void 0 && !_.showOnMultipleSelect))
+          return !1;
+        const j = g.items.filter((re) => g.selectedIds.has(re.id));
+        return !(_.visible && !_.visible(j));
+      });
+      V.length !== 0 && ($.visible = !0, $.x = a.clientX, $.y = a.clientY, $.actions = V, $.targetItem = r, $.targetColumnIndex = b);
+    }, P = () => {
+      $.visible = !1;
+    }, n = async (r) => {
+      $.targetColumnIndex >= 0 && await F($.targetColumnIndex, r);
+    }, c = (r) => {
+      O(r);
+    }, s = async (r) => {
+      await S(r);
+    }, v = async (r) => {
+      await M(r);
+    }, l = async (r, b) => {
+      await F(b, r);
+    }, o = (r, b, a) => {
+      R(a, r, b);
+    }, m = (r, b) => {
+      H(b, r);
     };
-    return m({
-      store: d,
-      openColumn: (a) => p(a),
-      refresh: () => v(k.value)
-    }), (a, f) => (i(), r("div", at, [
-      D(u).length > 0 ? (i(), R(Se, {
+    return f({
+      store: h,
+      openColumn: (r) => y(r),
+      refresh: () => S(p.value)
+    }), (r, b) => (i(), u("div", Ot, [
+      W(d).length > 0 ? (i(), N(Le, {
         key: 0,
-        breadcrumb: D(u),
-        onNavigate: s
-      }, null, 8, ["breadcrumb"])) : C("", !0),
-      g("div", rt, [
-        (i(!0), r(E, null, L(D(h), (b, w) => (i(), R(ot, {
-          key: w,
-          "column-state": b,
-          index: w,
-          "is-active": w === D(k),
-          onItemClick: z,
-          onItemSelect: T,
-          onContextMenu: U,
-          onRefresh: l,
-          onLoadMore: n,
-          onAction: t,
-          onFilterChange: c,
-          onSortChange: S
-        }, null, 8, ["column-state", "index", "is-active"]))), 128))
+        breadcrumb: W(d),
+        onNavigate: c
+      }, null, 8, ["breadcrumb"])) : w("", !0),
+      C("div", At, [
+        C("div", {
+          ref_key: "viewportRef",
+          ref: D,
+          class: "explorer-viewport"
+        }, [
+          (i(!0), u(E, null, L(W(k), (a, g) => (i(), N(It, {
+            key: g,
+            "column-state": a,
+            index: g,
+            "is-active": g === W(p),
+            onItemClick: T,
+            onItemSelect: G,
+            onContextMenu: X,
+            onRefresh: s,
+            onLoadMore: v,
+            onAction: l,
+            onFilterChange: o,
+            onSortChange: m
+          }, null, 8, ["column-state", "index", "is-active"]))), 128))
+        ], 512)
       ]),
-      Y(it, {
-        visible: y.visible,
-        x: y.x,
-        y: y.y,
-        actions: y.actions,
-        onClose: F,
-        onAction: H
+      K(Bt, {
+        visible: $.visible,
+        x: $.x,
+        y: $.y,
+        actions: $.actions,
+        onClose: P,
+        onAction: n
       }, null, 8, ["visible", "x", "y", "actions"])
     ]));
   }
-}), dt = /* @__PURE__ */ j(ut, [["__scopeId", "data-v-e73b7d3f"]]);
-function ft(e) {
-  var m, o, d;
+}), Nt = /* @__PURE__ */ Q(Ft, [["__scopeId", "data-v-c92ba803"]]);
+function Rt(e) {
+  var f, t, h;
   return {
     id: e.id,
     name: e.name,
     dataProvider: {
-      fetch: async (u) => {
-        if (console.log(`[ColumnBuilder-${e.id}] fetch called with params:`, u), console.log(`[ColumnBuilder-${e.id}] config.data:`, e.data), console.log(`[ColumnBuilder-${e.id}] config.fetchData:`, typeof e.fetchData), e.data)
+      fetch: async (d) => {
+        if (console.log(`[ColumnBuilder-${e.id}] fetch called with params:`, d), console.log(`[ColumnBuilder-${e.id}] config.data:`, e.data), console.log(`[ColumnBuilder-${e.id}] config.fetchData:`, typeof e.fetchData), e.data)
           return console.log(`[ColumnBuilder-${e.id}] Using static data`), {
             items: Array.isArray(e.data) ? e.data : [],
             hasMore: !1
@@ -698,13 +810,13 @@ function ft(e) {
         if (e.fetchData) {
           console.log(`[ColumnBuilder-${e.id}] Calling fetchData...`);
           try {
-            const h = await e.fetchData(u);
-            return console.log(`[ColumnBuilder-${e.id}] fetchData returned:`, h), {
-              items: Array.isArray(h) ? h : [],
+            const k = await e.fetchData(d);
+            return console.log(`[ColumnBuilder-${e.id}] fetchData returned:`, k), {
+              items: Array.isArray(k) ? k : [],
               hasMore: !1
             };
-          } catch (h) {
-            throw console.error(`[ColumnBuilder-${e.id}] Error in fetchData:`, h), h;
+          } catch (k) {
+            throw console.error(`[ColumnBuilder-${e.id}] Error in fetchData:`, k), k;
           }
         }
         return console.warn(`[ColumnBuilder-${e.id}] No data source provided!`), {
@@ -714,45 +826,57 @@ function ft(e) {
       }
     },
     selection: {
-      enabled: e.allowMultipleSelection !== void 0 || !!(e.singleActions && e.singleActions.length > 0) || !!(e.multipleActions && e.multipleActions.length > 0),
+      enabled: e.allowMultipleSelection !== void 0 || !!(e.singleActions && e.singleActions.length > 0) || !!(e.multipleActions && e.multipleActions.length > 0) || !!e.onItemClick,
+      // Enable selection if item is clickable
       multiple: e.allowMultipleSelection !== void 0 ? e.allowMultipleSelection : !1
     },
-    filters: (m = e.filters) == null ? void 0 : m.map((u) => ({
-      ...u,
+    filters: (f = e.filters) == null ? void 0 : f.map((d) => ({
+      ...d,
       default: void 0
     })),
     sortOptions: e.sortOptions,
     actions: [
-      ...((o = e.singleActions) == null ? void 0 : o.map((u) => ({
-        key: u.key,
-        label: u.label,
-        icon: u.icon,
-        color: u.color,
-        skipRefresh: u.skipRefresh,
+      ...((t = e.singleActions) == null ? void 0 : t.map((d) => ({
+        key: d.key,
+        label: d.label,
+        icon: d.icon,
+        color: d.color,
+        skipRefresh: d.skipRefresh,
         showOnSingleSelect: !0,
         showOnMultipleSelect: !1,
-        handler: async (h, k) => {
-          await u.handler(h);
+        handler: async (k, p) => {
+          var x;
+          const y = (x = p.selectedItems) == null ? void 0 : x[0];
+          if (!y) {
+            console.warn(`[ColumnBuilder-${e.id}] No item found for single action: ${d.key}`);
+            return;
+          }
+          await d.handler(y, p);
         }
       }))) || [],
-      ...((d = e.multipleActions) == null ? void 0 : d.map((u) => ({
-        key: u.key,
-        label: u.label,
-        icon: u.icon,
-        color: u.color,
-        skipRefresh: u.skipRefresh,
+      ...((h = e.multipleActions) == null ? void 0 : h.map((d) => ({
+        key: d.key,
+        label: d.label,
+        icon: d.icon,
+        color: d.color,
+        skipRefresh: d.skipRefresh,
         showOnSingleSelect: !1,
         showOnMultipleSelect: !0,
-        handler: async (h, k) => {
-          await u.handler(h);
+        handler: async (k, p) => {
+          const y = p.selectedItems || [];
+          if (y.length === 0) {
+            console.warn(`[ColumnBuilder-${e.id}] No items found for multiple action: ${d.key}`);
+            return;
+          }
+          await d.handler(y, p);
         }
       }))) || []
     ],
     itemClick: e.onItemClick ? {
       type: "navigate",
-      handler: async (u, h) => {
-        const k = await e.onItemClick(u, h);
-        return k ? { column: k } : {};
+      handler: async (d, k) => {
+        const p = await e.onItemClick(d, k);
+        return p ? { column: p } : {};
       }
     } : void 0,
     view: {
@@ -762,14 +886,14 @@ function ft(e) {
     }
   };
 }
-const vt = {
+const Dt = {
   install(e) {
-    e.component("ExplorerContainer", dt);
+    e.component("ExplorerContainer", Nt);
   }
 };
 export {
-  dt as ExplorerContainer,
-  ft as createColumn,
-  vt as default,
-  ke as useExplorer
+  Nt as ExplorerContainer,
+  Rt as createColumn,
+  Dt as default,
+  Ae as useExplorer
 };
